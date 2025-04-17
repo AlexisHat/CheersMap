@@ -3,10 +3,9 @@ const app = express();
 
 app.use(express.json());
 
+const authRouter = require('./src/routes/authRoutes');
 
-app.get('/', (req, res) => {
-  res.send('🚀 Hello, Express läuft!');
-});
+app.use('/auth' , authRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: '❌ Route nicht gefunden' });
