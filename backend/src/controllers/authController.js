@@ -2,8 +2,11 @@ const jwtProvider = require("jsonwebtoken");
 const RefreshToken = require("../models/RefreshToken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
-const { handleRefreshToken } = require("../services/AuthService");
-const { loginUser, registerUser } = require("../services/authService");
+const {
+  loginUser,
+  registerUser,
+  handleRefreshToken,
+} = require("../services/AuthService");
 
 exports.login = async (req, res) => {
   const { username, password } = req.body;
