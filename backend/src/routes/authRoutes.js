@@ -6,7 +6,8 @@ const controller = require('../controllers/authController')
 router.get('/login' , controller.login);
 
 router.post('/register', (req, res) => {
-    res.send('sex')
+    res.send('sex');
 });
+
 
 module.exports = router;
