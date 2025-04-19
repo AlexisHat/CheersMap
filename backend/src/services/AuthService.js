@@ -1,6 +1,7 @@
 const RefreshToken = require("../models/RefreshToken");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const { registerSchema } = require("../validators/userValidator");
 const {
   generateAccessToken,
   hash,
@@ -57,11 +58,20 @@ const loginUser = async (username, password) => {
 };
 
 const registerUser = async (userData) => {
-  const { vorname, nachname, email, username, password } = userData;
+  const parsed = registerSchema.safeParse(userData);
+  if (!parsed.success) {
+    const errorMessage = parsed.error.issues[0]?.message || "Ungültige Eingabe";
+    throw { status: 400, message: errorMessage };
+  }
+
+  const { vorname, nachname, email, username, password } = parsed.data;
 
   const existingUser = await User.findOne({ $or: [{ username }, { email }] });
   if (existingUser) {
-    throw { status: 400, message: "Benutzername oder E-Mail bereits vergeben" };
+    throw {
+      status: 400,
+      message: "Benutzername oder E-Mail bereits vergeben",
+    };
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -75,8 +85,6 @@ const registerUser = async (userData) => {
   });
 
   await newUser.save();
-
-  console.log("👉 newUser:", newUser);
 
   const accessToken = generateAccessToken(newUser);
   const refreshToken = await createAndStoreRefreshToken(newUser);
