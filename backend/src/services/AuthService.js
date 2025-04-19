@@ -88,9 +88,30 @@ const registerUser = async (userData) => {
   };
 };
 
+const logoutUser = async (refreshToken) => {
+  if (!refreshToken) {
+    const error = new Error("Kein Refresh Token angegeben.");
+    error.status = 400;
+    throw error;
+  }
+
+  const deletedToken = await RefreshToken.findOneAndDelete({
+    token: refreshToken,
+  });
+
+  if (!deletedToken) {
+    const error = new Error("Refresh Token nicht gefunden.");
+    error.status = 404;
+    throw error;
+  }
+
+  return { message: "Erfolgreich ausgeloggt." };
+};
+
 module.exports = {
   handleRefreshToken,
   createAndStoreRefreshToken,
   loginUser,
   registerUser,
+  logoutUser,
 };

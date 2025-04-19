@@ -6,6 +6,7 @@ const {
   loginUser,
   registerUser,
   handleRefreshToken,
+  logoutUser,
 } = require("../services/AuthService");
 
 exports.login = async (req, res) => {
@@ -39,6 +40,19 @@ exports.refresh = async (req, res) => {
     const { refreshToken } = req.body;
     const tokens = await handleRefreshToken(refreshToken);
     res.json(tokens);
+  } catch (err) {
+    console.error("Error in refresh token:", err);
+    res
+      .status(err.status || 500)
+      .json({ message: err.message || "Serverfehler" });
+  }
+};
+
+exports.logout = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    const result = await logoutUser(refreshToken);
+    res.json(result);
   } catch (err) {
     console.error("Error in refresh token:", err);
     res
