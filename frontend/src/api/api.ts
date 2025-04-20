@@ -31,15 +31,23 @@ api.interceptors.response.use(
       if (isTokenExpired && !originalRequest._retry && refreshToken) {
         originalRequest._retry = true;
   
-        const newAccessToken = await refreshAccessToken(refreshToken);
+        try {
+          const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+            await refreshAccessToken(refreshToken);
   
-        if (newAccessToken) {
           await AsyncStorage.setItem('accessToken', newAccessToken);
-          await login({ accessToken: newAccessToken, refreshToken });
+          await AsyncStorage.setItem('refreshToken', newRefreshToken);
+  
+          await login({
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+          });
+  
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return api(originalRequest);
-        } else {
+        } catch (err) {
           await logout();
+          return Promise.reject(err);
         }
       }
   
@@ -47,5 +55,5 @@ api.interceptors.response.use(
     }
   );
   
-
+  
 export default api;
