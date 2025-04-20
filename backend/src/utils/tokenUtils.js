@@ -26,6 +26,5 @@ function generateRefreshToken() {
 module.exports = {
   generateAccessToken,
   generateRefreshToken,
-  verifyRefreshToken,
   hash,
 };
