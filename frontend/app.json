@@ -13,7 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+    "NSCameraUsageDescription": "Diese App benötigt Zugriff auf die Kamera.", 
+    "NSLocationWhenInUseUsageDescription": "Diese App benötigt deinen Standort für Geotagging."
+  }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,8 +25,13 @@
         "backgroundColor": "#ffffff"
       }
     },
+
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-camera"
+    ]
   }
 }
