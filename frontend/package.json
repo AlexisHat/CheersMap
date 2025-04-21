@@ -19,7 +19,8 @@
     "zustand": "^5.0.3",
     "expo-camera": "~16.0.18",
     "expo-image": "~2.0.7",
-    "expo-location": "~18.0.10"
+    "expo-location": "~18.0.10",
+    "react-native-maps": "1.18.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
