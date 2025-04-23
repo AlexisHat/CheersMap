@@ -1,7 +1,4 @@
 import React, { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { AuthStackParamList } from "../types/authTypes";
 import {
   View,
   Text,
@@ -10,9 +7,16 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import { login } from "../services/authService";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { AuthStackParamList } from "../types/authTypes";
+import { register } from "../services/authService";
+import { RegisterRequest } from "../types/authTypes";
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
+  const [email, setEmail] = useState("");
+  const [vorname, setVorname] = useState("");
+  const [nachname, setNachname] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,18 +24,30 @@ export default function LoginScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
 
-  const handleLogin = async () => {
-    if (!username || !password) {
-      Alert.alert("Fehler", "Bitte gib E-Mail und Passwort ein.");
+  const handleRegister = async () => {
+    if (!email || !vorname || !nachname || !username || !password) {
+      Alert.alert("Fehler", "Bitte fülle alle Felder aus.");
       return;
     }
 
+    const userData: RegisterRequest = {
+      email,
+      vorname,
+      nachname,
+      username,
+      password,
+    };
+
     try {
       setLoading(true);
-      await login({ username, password });
-      Alert.alert("Erfolg", "Du bist jetzt eingeloggt!");
+      await register(userData);
+      Alert.alert(
+        "Erfolg",
+        "Registrierung erfolgreich! Du kannst dich nun einloggen."
+      );
+      navigation.navigate("Login");
     } catch (error: any) {
-      Alert.alert("Login fehlgeschlagen", error.message);
+      Alert.alert("Registrierung fehlgeschlagen", error.message);
     } finally {
       setLoading(false);
     }
@@ -39,13 +55,36 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Willkommen zurück 👋</Text>
-      <Text style={styles.subtitle}>Bitte melde dich an, um fortzufahren</Text>
+      <Text style={styles.title}>Erstelle einen Account</Text>
 
       <TextInput
         style={styles.input}
         placeholder="E-Mail"
         keyboardType="email-address"
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Vorname"
+        autoCapitalize="words"
+        value={vorname}
+        onChangeText={setVorname}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Nachname"
+        autoCapitalize="words"
+        value={nachname}
+        onChangeText={setNachname}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Benutzername"
         autoCapitalize="none"
         value={username}
         onChangeText={setUsername}
@@ -61,20 +100,17 @@ export default function LoginScreen() {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={handleLogin}
+        onPress={handleRegister}
         disabled={loading}
       >
         <Text style={styles.buttonText}>
-          {loading ? "Einloggen..." : "Einloggen"}
+          {loading ? "Registrieren..." : "Registrieren"}
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity>
-        <Text style={styles.forgotPassword}>Passwort vergessen?</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-        <Text style={{ marginTop: 20, textAlign: "center", color: "#007bff" }}>
-          Noch keinen Account? Jetzt registrieren
+      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+        <Text style={styles.forgotPassword}>
+          Schon ein Konto? Jetzt einloggen
         </Text>
       </TouchableOpacity>
     </View>
@@ -92,12 +128,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 10,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#777",
-    marginBottom: 30,
     textAlign: "center",
   },
   input: {
