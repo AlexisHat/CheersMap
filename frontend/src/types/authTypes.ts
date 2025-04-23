@@ -18,7 +18,12 @@ export type RefreshResponse = {
     email: string;
     vorname: string;
     nachname: string;
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    username: string,
+    password: string,
+  };
+  
+  export type AuthStackParamList = {
+    Login: undefined;
+    Register: undefined;
   };
   

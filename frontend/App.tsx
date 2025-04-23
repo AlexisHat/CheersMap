@@ -4,14 +4,14 @@ import { NavigationContainer } from "@react-navigation/native";
 import { useAuthStore } from "./src/store/authStore";
 import TabNavigator from "./src/navigation/TabNavigator";
 import SplashScreen from "./src/screens/SplashScreen";
-import LoginScreen from "./src/screens/LoginScreen";
+import AuthStack from "./src/navigation/AuthStack";
 
 export default function App() {
   const { isLoading, isAuthenticated, checkLoginStatus } = useAuthStore();
 
   useEffect(() => {
     checkLoginStatus();
-  }, []);
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return <SplashScreen />;
@@ -19,7 +19,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      {isAuthenticated ? <TabNavigator /> : <LoginScreen />}
+      {isAuthenticated ? <TabNavigator /> : <AuthStack />}
     </NavigationContainer>
   );
 }
