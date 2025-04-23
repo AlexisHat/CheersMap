@@ -104,7 +104,7 @@ const logoutUser = async (refreshToken) => {
   }
 
   const deletedToken = await RefreshToken.findOneAndDelete({
-    token: refreshToken,
+    token: hash(refreshToken),
   });
 
   if (!deletedToken) {
