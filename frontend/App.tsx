@@ -7,11 +7,13 @@ import SplashScreen from "./src/screens/SplashScreen";
 import AuthStack from "./src/navigation/AuthStack";
 
 export default function App() {
-  const { isLoading, isAuthenticated, checkLoginStatus } = useAuthStore();
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const checkLoginStatus = useAuthStore((state) => state.checkLoginStatus);
 
   useEffect(() => {
     checkLoginStatus();
-  }, [isAuthenticated]);
+  }, []);
 
   if (isLoading) {
     return <SplashScreen />;

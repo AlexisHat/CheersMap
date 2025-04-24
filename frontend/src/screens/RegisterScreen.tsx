@@ -45,7 +45,6 @@ export default function RegisterScreen() {
         "Erfolg",
         "Registrierung erfolgreich! Du kannst dich nun einloggen."
       );
-      navigation.navigate("Login");
     } catch (error: any) {
       Alert.alert("Registrierung fehlgeschlagen", error.message);
     } finally {
