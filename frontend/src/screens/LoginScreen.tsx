@@ -11,6 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { login } from "../services/authService";
+import { updateStoredTokens } from "../helpers/authHelper";
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");
@@ -28,8 +29,10 @@ export default function LoginScreen() {
 
     try {
       setLoading(true);
-      await login({ username, password });
-      Alert.alert("Erfolg", "Du bist jetzt eingeloggt!");
+
+      const { accessToken, refreshToken } = await login({ username, password });
+
+      await updateStoredTokens(accessToken, refreshToken);
     } catch (error: any) {
       Alert.alert("Login fehlgeschlagen", error.message);
     } finally {

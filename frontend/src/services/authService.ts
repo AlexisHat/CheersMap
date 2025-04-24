@@ -1,5 +1,6 @@
 import api from '../api/api';
-import { updateStoredTokens } from '../helpers/authHelper';
+import { getStoredRefreshToken, updateStoredTokens } from '../helpers/authHelper';
+import { useAuthStore } from '../store/authStore';
 import {
   AuthResponse,
   LoginRequest,
@@ -50,6 +51,19 @@ export const register = async (userData: RegisterRequest) => {
   }
 };
 
+export const logout = async () => {
+  try {
+    const refreshToken = await getStoredRefreshToken(); 
+
+    console.log(refreshToken)
+    await api.post('auth/logout', { refreshToken }); 
+
+  } catch (error: any) {
+    console.error("Logout-Fehler:", error);
+  } finally {
+    await useAuthStore.getState().logout();
+  }
+};
 export const refreshAccessToken = async (
   oldRefreshToken: string
 ): Promise<RefreshResponse> => {
@@ -73,5 +87,4 @@ export const refreshAccessToken = async (
     throw new Error(message);
   }
 };
-
 
