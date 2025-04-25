@@ -3,6 +3,7 @@
 /frontend/.expo
 /frontend/.expo-shared
 /frontend/web-build
+/frontend/.env
 
 # === Backend ===
 /backend/node_modules
