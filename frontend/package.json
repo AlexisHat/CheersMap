@@ -22,7 +22,9 @@
     "react-native": "0.76.9",
     "react-native-dotenv": "^3.4.11",
     "react-native-maps": "1.18.0",
-    "zustand": "^5.0.3"
+    "zustand": "^5.0.3",
+    "expo-auth-session": "~6.0.3",
+    "undefined": "expo-auth-session/providers/google"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
