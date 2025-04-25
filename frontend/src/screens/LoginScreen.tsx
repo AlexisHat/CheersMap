@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { login } from "../services/authService";
 import { updateStoredTokens } from "../helpers/authHelper";
+import { GOOGLE_CLIENT_ID } from "@env";
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");
