@@ -2,6 +2,9 @@ import "dotenv/config";
 
 export default {
   expo: {
+    android: {
+      package: "com.cheersmap.frontend",
+    },
     plugins: [
       [
         "@react-native-google-signin/google-signin",
