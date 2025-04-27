@@ -16,9 +16,6 @@ import { updateStoredTokens } from "../helpers/authHelper";
 import { GOOGLE_CLIENT_ID } from "@env";
 import * as Google from "expo-auth-session/providers/google";
 import * as AuthSession from "expo-auth-session";
-import * as WebBrowser from "expo-web-browser";
-
-WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const navigation =
@@ -27,20 +24,6 @@ export default function LoginScreen() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const redirectUri = "https://auth.expo.io/@cheersmap/frontend";
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: GOOGLE_CLIENT_ID,
-    redirectUri,
-  });
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { authentication } = response;
-      // Sende authentication.idToken oder authentication.accessToken an dein Backend!
-      console.log(authentication);
-    }
-  }, [response]);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -91,22 +74,6 @@ export default function LoginScreen() {
         <Text style={styles.buttonText}>
           {loading ? "Einloggen..." : "Einloggen"}
         </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: "#db4437" }]}
-        disabled={!request}
-        onPress={() => {
-          // 1️⃣ Redirect-URI ausgeben
-          console.log("Redirect URI, die an Google geht:", redirectUri);
-
-          // 2️⃣ Login auslösen und Ergebnis loggen
-          promptAsync()
-            .then((r) => console.log("OAuth-Response:", r))
-            .catch((e) => console.log("OAuth-Error:", e));
-        }}
-      >
-        <Text style={styles.buttonText}>Mit Google anmelden</Text>
       </TouchableOpacity>
 
       <TouchableOpacity>

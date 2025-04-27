@@ -18,8 +18,10 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Diese App benötigt Zugriff auf die Kamera.",
-        "NSLocationWhenInUseUsageDescription": "Diese App benötigt deinen Standort für Geotagging."
-      }
+        "NSLocationWhenInUseUsageDescription": "Diese App benötigt deinen Standort für Geotagging.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.cheersmap.frontend"
     },
     "android": {
       "adaptiveIcon": {
@@ -27,8 +29,6 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ]
