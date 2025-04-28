@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { login } from "../services/authService";
 import { updateStoredTokens } from "../helpers/authHelper";
-import { GoogleLoginButton } from "./GoogleLoginButton";
 
 export default function LoginScreen() {
   const navigation =
@@ -49,9 +48,9 @@ export default function LoginScreen() {
 
       <TextInput
         style={styles.input}
-        placeholder="E-Mail"
-        keyboardType="email-address"
+        placeholder="Username"
         autoCapitalize="none"
+        autoCorrect={false}
         value={username}
         onChangeText={setUsername}
       />
