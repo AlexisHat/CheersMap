@@ -5,6 +5,9 @@
 /frontend/web-build
 /frontend/.env
 /frontend/dist
+/frontend/android
+/frontend/ios
+
 
 # === Backend ===
 /backend/node_modules

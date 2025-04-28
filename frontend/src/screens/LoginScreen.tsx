@@ -13,9 +13,7 @@ import {
 } from "react-native";
 import { login } from "../services/authService";
 import { updateStoredTokens } from "../helpers/authHelper";
-import { GOOGLE_CLIENT_ID } from "@env";
-import * as Google from "expo-auth-session/providers/google";
-import * as AuthSession from "expo-auth-session";
+import { GoogleLoginButton } from "./GoogleLoginButton";
 
 export default function LoginScreen() {
   const navigation =
