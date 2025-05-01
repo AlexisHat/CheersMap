@@ -12,6 +12,6 @@ mongoose
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server läuft auf http://localhost:${PORT}`);
+app.listen(8080, "0.0.0.0", () => {
+  console.log("Server läuft auf Port 8080");
 });
