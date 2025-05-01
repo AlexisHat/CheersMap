@@ -2,11 +2,6 @@
   "extends": "expo/tsconfig.base.json",
   "compilerOptions": {
     "strict": true,
-    "types": ["react-native-dotenv"],
-    "moduleResolution": "node",
-    "baseUrl": ".",
-    "paths": {
-      "@env": ["./env.d.ts"]
-    }
+    "moduleResolution": "node"
   }
 }
