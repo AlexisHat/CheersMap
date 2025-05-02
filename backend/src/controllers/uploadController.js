@@ -1,3 +1,3 @@
 exports.createPost = async (req, res) => {
-  const {} = req.body;
+  const { long, lat, placeName, placeId, creationTime } = req.body;
 };
