@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { refreshAccessToken } from '../services/authService';
+import { refreshAccessToken } from '../services/tokenService';
 import {
   getStoredRefreshToken,
   updateStoredTokens,

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { refreshAccessToken } from '../services/authService'; // ggf. Pfad anpassen
+import { refreshAccessToken } from '../services/tokenService';
 
 type AuthState = {
   accessToken: string | null;
