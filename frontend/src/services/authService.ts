@@ -63,5 +63,3 @@ export const logout = async () => {
     await useAuthStore.getState().logout();
   }
 };
-
-

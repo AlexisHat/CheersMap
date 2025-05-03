@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { refreshAccessToken } from '../services/tokenService';
+import { RefreshResponse } from '../types/authTypes';
+import api from "../api/api"
 
 type AuthState = {
   accessToken: string | null;
@@ -94,3 +95,27 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 }));
+
+export const refreshAccessToken = async (
+  oldRefreshToken: string
+): Promise<RefreshResponse> => {
+  try {
+    const response = await api.post<RefreshResponse>('/auth/refresh', {
+      refreshToken: oldRefreshToken,
+    });
+
+    const { accessToken, refreshToken } = response.data;
+
+    if (!accessToken || !refreshToken) {
+      throw new Error('Serverantwort unvollständig');
+    }
+
+    return { accessToken, refreshToken };
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      'Fehler beim Refresh des Tokens';
+    throw new Error(message);
+  }
+};
