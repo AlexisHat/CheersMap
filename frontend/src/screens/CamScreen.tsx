@@ -10,7 +10,7 @@ import type { PostStackParamList } from "../navigation/PostStack";
 
 export const CamScreen: React.FC = () => {
   const [permInfo, requestPermission] = useCameraPermissions();
-  const cameraRef = useRef<CameraView>(null);
+  const cameraRef = useRef<CameraView | null>(null);
 
   const [backUri, setBackUri] = useState<string | null>(null);
   const [frontUri, setFrontUri] = useState<string | null>(null);

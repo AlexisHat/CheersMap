@@ -4,7 +4,7 @@ export const wait = (ms: number): Promise<void> =>
   new Promise((res) => setTimeout(res, ms));
   
 export const captureDualPhotosWithCountdown = async (
-    cameraRef: React.RefObject<CameraView>,
+    cameraRef: React.RefObject<CameraView | null>,
     setCountdown: (val: number | null) => void,
     setFacing: (val: "front" | "back") => void
   ): Promise<{ back: string; front: string }> => {
