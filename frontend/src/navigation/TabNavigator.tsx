@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MapScreen from "../screens/MapScreen";
 import ProfileScreen from "../screens/ProfileScreen";
-import CamScreen from "../screens/CamScreen";
+import { CamScreen } from "../screens/CamScreen";
 import Feather from "@expo/vector-icons/Feather";
 
 const Tab = createBottomTabNavigator();

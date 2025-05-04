@@ -1,166 +1,170 @@
-import React from "react";
-import {
-  CameraMode,
-  CameraType,
-  CameraView,
-  useCameraPermissions,
-} from "expo-camera";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet, View, Pressable, Text } from "react-native";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { Image } from "expo-image";
-import * as Location from 'expo-location';
-import { Button, Pressable, Text, View, StyleSheet } from "react-native";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import Feather from "@expo/vector-icons/Feather";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { captureDualPhotosWithCountdown } from "../services/dualCamService";
 
-export default function CamScreen() {
-  
-    
-  const [permission, requestPermission] = useCameraPermissions();
-  const ref = useRef<CameraView>(null);
-  const [uri, setUri] = useState<string | null>(null);
-  const [mode, setMode] = useState<CameraMode>("picture");
-  const [facing, setFacing] = useState<CameraType>("back");
-  const [recording, setRecording] = useState(false);
+export const CamScreen: React.FC = () => {
+  const [permInfo, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
 
-  if (!permission) {
-    return null;
-  }
+  const [backUri, setBackUri] = useState<string | null>(null);
+  const [frontUri, setFrontUri] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [facing, setFacing] = useState<"front" | "back">("back");
 
-  if (!permission.granted) {
+  const startCapture = async () => {
+    if (!cameraRef.current || busy) return;
+    setBusy(true);
+    const { back, front } = await captureDualPhotosWithCountdown(
+      cameraRef,
+      setCountdown,
+      setFacing
+    );
+    setBackUri(back);
+    setFrontUri(front);
+    setBusy(false);
+  };
+
+  const reset = () => {
+    setBackUri(null);
+    setFrontUri(null);
+    setCountdown(null);
+    setFacing("back");
+  };
+
+  if (!permInfo) {
     return (
-      <View style={{ flex: 1 }}>
-        <Text style={{ textAlign: "center" }}>
-          We need your permission to use the camera
-        </Text>
-        <Button onPress={requestPermission} title="Grant permission" />
+      <View style={styles.center}>
+        <Text style={styles.loadingText}>Lade Berechtigungen…</Text>
       </View>
     );
   }
-//Exif Daten=true
-  const takePicture = async () => {
-    const photo = await ref.current?.takePictureAsync({ base64: true, exif:true});
-    console.log(photo.base64); // Bilddaten als String
-    setUri(photo?.uri);
 
-    //Standort abfragen
-    const { status } = await Location.requestForegroundPermissionsAsync();
-  if (status !== 'granted') {
-    console.log('Standortzugriff verweigert');
-    return;
-  }
-  //Standort holen
-  const location = await Location.getCurrentPositionAsync({});
-
-  const data = {
-    imageUri: photo?.uri,
-    location: {
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-    },};
-
-    console.log("Foto + Standort:", data);
-    
-  
-
-  
-  };
-
-  const recordVideo = async () => {
-    if (recording) {
-      setRecording(false);
-      ref.current?.stopRecording();
-      return;
-    }
-    setRecording(true);
-    const video = await ref.current?.recordAsync();
-    console.log({ video });
-  };
-
-  const toggleMode = () => {
-    setMode((prev) => (prev === "picture" ? "video" : "picture"));
-  };
-  
-
-
-  const toggleFacing = () => {
-    setFacing((prev) => (prev === "back" ? "front" : "back"));
-  };
-
-  const renderPicture = () => {
+  if (!permInfo.granted) {
     return (
-      <View>
-        <Image
-          source={{ uri }}
-          contentFit="contain"
-          style={{ width: 300, aspectRatio: 1 }}
-        />
-        <Button onPress={() => setUri(null)} title="Take another picture" />
+      <View style={styles.center}>
+        <Text style={styles.permissionText}>Kamerazugriff benötigt</Text>
+        <Pressable onPress={requestPermission} style={styles.button}>
+          <Text style={styles.buttonText}>Erlauben</Text>
+        </Pressable>
       </View>
     );
-  };
+  }
 
-  const renderCamera = () => {
+  if (backUri && frontUri) {
     return (
-      <CameraView
-        style={styles.camera}
-        ref={ref}
-        mode={mode}
-        facing={facing}
-        mute={false}
-        responsiveOrientationWhenOrientationLocked
-      >
-        <View style={styles.shutterContainer}>
-          <Pressable onPress={toggleMode}>
-            {mode === "picture" ? (
-              <AntDesign name="picture" size={32} color="white" />
-            ) : (
-              <Feather name="video" size={32} color="white" />
-            )}
-          </Pressable>
-          <Pressable onPress={mode === "picture" ? takePicture : recordVideo}>
-            {({ pressed }) => (
-              <View
-                style={[
-                  styles.shutterBtn,
-                  {
-                    opacity: pressed ? 0.5 : 1,
-                  },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.shutterBtnInner,
-                    {
-                      backgroundColor: mode === "picture" ? "white" : "red",
-                    },
-                  ]}
-                />
-              </View>
-            )}
-          </Pressable>
-          <Pressable onPress={toggleFacing}>
-            <FontAwesome6 name="rotate-left" size={32} color="white" />
-          </Pressable>
+      <View style={styles.center}>
+        <View style={styles.previewRow}>
+          <Image
+            source={{ uri: backUri }}
+            style={styles.thumb}
+            contentFit="cover"
+          />
+          <Image
+            source={{ uri: frontUri }}
+            style={styles.thumb}
+            contentFit="cover"
+          />
         </View>
-      </CameraView>
+        <Pressable onPress={reset} style={styles.button}>
+          <Text style={styles.buttonText}>Neu aufnehmen</Text>
+        </Pressable>
+      </View>
     );
-  };
+  }
 
   return (
-    <View style={styles.container}>
-      {uri ? renderPicture() : renderCamera()}
-    </View>
+    <SafeAreaView style={styles.flex}>
+      <CameraView
+        ref={cameraRef}
+        style={styles.camera}
+        facing={facing}
+        responsiveOrientationWhenOrientationLocked
+      />
+      <View style={styles.overlay}>
+        {countdown !== null ? (
+          <Text style={styles.countdown}>{countdown}</Text>
+        ) : (
+          <Pressable
+            onPress={startCapture}
+            disabled={busy}
+            style={styles.shutter}
+          >
+            <View style={styles.shutterInner} />
+          </Pressable>
+        )}
+      </View>
+    </SafeAreaView>
   );
-    
-  
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
+  flex: { flex: 1, backgroundColor: "#000" },
+  center: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#000",
+  },
+  previewRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  thumb: {
+    width: 120,
+    height: 160,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#666",
+  },
+  overlay: {
+    position: "absolute",
+    bottom: 40,
+    width: "100%",
+    alignItems: "center",
+  },
+  countdown: {
+    fontSize: 48,
+    color: "white",
+    fontWeight: "bold",
+  },
+  shutter: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 4,
+    borderColor: "white",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+  },
+  shutterInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "white",
+  },
+  button: {
+    marginTop: 20,
+    backgroundColor: "#444",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+  },
+  loadingText: {
+    color: "#fff",
+  },
+  permissionText: {
+    color: "#fff",
+    marginBottom: 12,
+  },
+  camera: {
+    flex: 1,
   },
 });
