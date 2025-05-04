@@ -10,22 +10,22 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.2",
-    "@react-navigation/bottom-tabs": "^7.3.10",
+    "@react-navigation/bottom-tabs": "^7.2.0",
     "axios": "^1.8.4",
-    "expo": "~52.0.46",
-    "expo-status-bar": "~2.0.1",
-    "react": "18.3.1",
-    "react-native": "0.76.9",
-    "zustand": "^5.0.3",
-    "expo-camera": "~16.0.18",
-    "expo-image": "~2.0.7",
-    "expo-location": "~18.0.10",
-    "react-native-maps": "1.18.0",
-    "expo-router": "~4.0.20"
+    "expo": "^53.0.0",
+    "expo-camera": "~16.1.6",
+    "expo-image": "~2.1.6",
+    "expo-location": "~18.1.4",
+    "expo-router": "~5.0.5",
+    "expo-status-bar": "~2.2.3",
+    "react": "19.0.0",
+    "react-native": "0.79.2",
+    "react-native-maps": "1.20.1",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@types/react": "~18.3.12",
+    "@types/react": "^19.1.2",
     "typescript": "^5.3.3"
   },
   "private": true
