@@ -3,6 +3,7 @@ import MapScreen from "../screens/MapScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import { CamScreen } from "../screens/CamScreen";
 import Feather from "@expo/vector-icons/Feather";
+import { PostStack } from "./PostStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -28,9 +29,10 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Camara"
-        component={CamScreen}
+        name="Camera"
+        component={PostStack}
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Feather name="camera" size={size} color={color} />
           ),

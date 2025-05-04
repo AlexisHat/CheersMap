@@ -4,6 +4,9 @@ import { StyleSheet, View, Pressable, Text } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Image } from "expo-image";
 import { captureDualPhotosWithCountdown } from "../services/dualCamService";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { PostStackParamList } from "../navigation/PostStack";
 
 export const CamScreen: React.FC = () => {
   const [permInfo, requestPermission] = useCameraPermissions();
@@ -14,6 +17,9 @@ export const CamScreen: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [facing, setFacing] = useState<"front" | "back">("back");
+
+  const navigation =
+    useNavigation<NativeStackNavigationProp<PostStackParamList>>();
 
   const startCapture = async () => {
     if (!cameraRef.current || busy) return;
@@ -71,6 +77,14 @@ export const CamScreen: React.FC = () => {
         </View>
         <Pressable onPress={reset} style={styles.button}>
           <Text style={styles.buttonText}>Neu aufnehmen</Text>
+        </Pressable>
+        <Pressable
+          onPress={() =>
+            navigation.navigate("CreatePost", { backUri, frontUri })
+          }
+          style={[styles.button, { backgroundColor: "#4CAF50" }]}
+        >
+          <Text style={styles.buttonText}>Weiter</Text>
         </Pressable>
       </View>
     );
