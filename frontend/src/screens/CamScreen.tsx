@@ -80,7 +80,7 @@ export const CamScreen: React.FC = () => {
         </Pressable>
         <Pressable
           onPress={() =>
-            navigation.navigate("CreatePost", { backUri, frontUri })
+            navigation.navigate("SelectLocation", { backUri, frontUri })
           }
           style={[styles.button, { backgroundColor: "#4CAF50" }]}
         >
