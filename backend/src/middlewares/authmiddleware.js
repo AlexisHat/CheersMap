@@ -8,11 +8,12 @@ export function authenticateToken(req, res, next) {
     return res.status(401).json({ message: "Kein Token übermittelt" });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, payload) => {
     if (err) {
+      console.error("JWT Fehler:", err.message);
       return res
         .status(403)
-        .json({ message: "Token ungültig oder abgelaufen" });
+        .json({ message: "Token ungültig oder abgelaufen lol" });
     }
 
     req.user = payload;
