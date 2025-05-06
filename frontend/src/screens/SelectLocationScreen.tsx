@@ -9,17 +9,25 @@ import {
 } from "react-native";
 import * as Location from "expo-location";
 import { fetchNearbyLocations } from "../services/locationService";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { PostStackParamList } from "../navigation/PostStack";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 type LocationItem = {
   id: string;
   name: string;
 };
 
+type Props = NativeStackScreenProps<PostStackParamList, "SelectLocation">;
+
 export const SelectLocationScreen: React.FC = () => {
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+
+  const navigation = useNavigation<Props["navigation"]>();
+  const route = useRoute<Props["route"]>();
+  const { backUri, frontUri } = route.params;
 
   useEffect(() => {
     (async () => {
@@ -45,9 +53,12 @@ export const SelectLocationScreen: React.FC = () => {
     })();
   }, []);
 
-  const handleSelect = (id: string) => {
-    setSelectedLocation(id);
-    // ggf. weitere Logik z. B. Weiterleitung, speichern etc.
+  const handleSelect = (placeId: string) => {
+    navigation.navigate("CreatePost", {
+      placeId,
+      backUri,
+      frontUri,
+    });
   };
 
   if (loading) {
@@ -75,10 +86,7 @@ export const SelectLocationScreen: React.FC = () => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={[
-              styles.item,
-              selectedLocation === item.id && styles.selectedItem,
-            ]}
+            style={styles.item}
             onPress={() => handleSelect(item.id)}
           >
             <Text>{item.name}</Text>
@@ -102,8 +110,5 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#eee",
     marginBottom: 10,
-  },
-  selectedItem: {
-    backgroundColor: "#cce5ff",
   },
 });
