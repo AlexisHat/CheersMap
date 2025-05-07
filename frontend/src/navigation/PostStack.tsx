@@ -2,11 +2,12 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { CamScreen } from "../screens/CamScreen";
 import { SelectLocationScreen } from "../screens/SelectLocationScreen";
 import { CreatePostScreen } from "../screens/CreatePostScreen";
+import { LocationItem } from "../types/postTypes";
 
 export type PostStackParamList = {
   Cam: undefined;
   SelectLocation: { backUri: string; frontUri: string };
-  CreatePost: { placeId: string; backUri: string; frontUri: string };
+  CreatePost: { location: LocationItem; backUri: string; frontUri: string };
 };
 
 const Stack = createNativeStackNavigator<PostStackParamList>();
