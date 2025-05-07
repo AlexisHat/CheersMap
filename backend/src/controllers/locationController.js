@@ -24,7 +24,7 @@ exports.getLocationsNearby = async (req, res) => {
               latitude: lat,
               longitude: long,
             },
-            radius: 75,
+            radius: 1075, //noch richtigen wert überlegen
           },
         },
         maxResultCount: maxResults,
@@ -46,7 +46,6 @@ exports.getLocationsNearby = async (req, res) => {
     const mapped = places.map((place) => ({
       name: place.displayName?.text || "Unbenannt",
       address: place.formattedAddress,
-      location: place.location,
       id: place.id,
     }));
 
