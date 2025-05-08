@@ -12,11 +12,7 @@ import { fetchNearbyLocations } from "../services/locationService";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { PostStackParamList } from "../navigation/PostStack";
 import { useNavigation, useRoute } from "@react-navigation/native";
-
-type LocationItem = {
-  id: string;
-  name: string;
-};
+import { LocationItem } from "../types/postTypes";
 
 type Props = NativeStackScreenProps<PostStackParamList, "SelectLocation">;
 
@@ -42,20 +38,23 @@ export const SelectLocationScreen: React.FC = () => {
         const { coords } = await Location.getCurrentPositionAsync({});
         const data = await fetchNearbyLocations(
           coords.latitude,
-          coords.longitude
+          coords.longitude,
+          10
         );
-        setLocations(data);
+        console.log(data);
+        setLocations(data.results);
       } catch (err) {
         setError("Failed to load locations.");
+        console.log(err);
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const handleSelect = (placeId: string) => {
+  const handleSelect = (location: LocationItem) => {
     navigation.navigate("CreatePost", {
-      placeId,
+      location,
       backUri,
       frontUri,
     });
@@ -87,7 +86,7 @@ export const SelectLocationScreen: React.FC = () => {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.item}
-            onPress={() => handleSelect(item.id)}
+            onPress={() => handleSelect(item)}
           >
             <Text>{item.name}</Text>
           </TouchableOpacity>
