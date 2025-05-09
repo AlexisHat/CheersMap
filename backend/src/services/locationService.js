@@ -1,7 +1,8 @@
 const axios = require("axios");
 const NodeCache = require("node-cache");
+const locationCache = require("../services/cache");
 
-const locationCache = new NodeCache({ stdTTL: 1200 });
+const locationCache = new NodeCache({ stdTTL: 1000 });
 
 exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
   const cacheKey = `${lat},${long},${maxResults}`;
@@ -43,6 +44,12 @@ exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
   );
 
   const places = response.data.places || [];
+
+  for (const place of places) {
+    if (place.id) {
+      locationCache.set(place.id, place);
+    }
+  }
 
   const mapped = places.map((place) => ({
     name: place.displayName?.text || "Unbenannt",
