@@ -1,6 +1,17 @@
 const axios = require("axios");
+const NodeCache = require("node-cache");
+
+const locationCache = new NodeCache({ stdTTL: 1200 });
 
 exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
+  const cacheKey = `${lat},${long},${maxResults}`;
+
+  const cachedData = locationCache.get(cacheKey);
+  if (cachedData) {
+    console.log("Cache hit");
+    return cachedData;
+  }
+
   const apiKey = process.env.GOOGLE_PLACE_API_KEY;
 
   const types = ["cafe", "bakery", "bar", "restaurant"];
@@ -38,6 +49,9 @@ exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
     address: place.formattedAddress,
     id: place.id,
   }));
+
+  locationCache.set(cacheKey, mapped);
+  console.log("Cache miss – Daten gespeichert");
 
   return mapped;
 };
