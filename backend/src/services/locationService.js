@@ -2,12 +2,12 @@ const axios = require("axios");
 const NodeCache = require("node-cache");
 const locationCache = require("../services/cache");
 
-const locationCache = new NodeCache({ stdTTL: 1000 });
+const rquestCache = new NodeCache({ stdTTL: 1000 });
 
 exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
   const cacheKey = `${lat},${long},${maxResults}`;
 
-  const cachedData = locationCache.get(cacheKey);
+  const cachedData = rquestCache.get(cacheKey);
   if (cachedData) {
     console.log("Cache hit");
     return cachedData;
