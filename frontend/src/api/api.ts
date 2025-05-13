@@ -9,9 +9,6 @@ import {
 
 const api = axios.create({
   baseURL: 'http://192.168.178.47:8080',
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 api.interceptors.request.use(async (config) => {
