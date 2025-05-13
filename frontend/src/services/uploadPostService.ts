@@ -1,0 +1,50 @@
+import * as ImageManipulator from "expo-image-manipulator";
+import api from "../api/api";
+
+const compressImage = async (uri: string): Promise<string> => {
+  const result = await ImageManipulator.manipulateAsync(
+    uri,
+    [],
+    {
+      compress: 0.6, 
+      format: ImageManipulator.SaveFormat.JPEG,
+    }
+  );
+  return result.uri;
+};
+
+export const uploadPost = async (data: {
+    locationId: string;
+    frontUri: string;
+    backUri: string;
+    comment: string;
+  }) => {
+    const { locationId, frontUri, backUri, comment } = data;
+  try {
+    const compressedFrontUri = await compressImage(frontUri);
+    const compressedBackUri = await compressImage(backUri);
+
+
+    const formData = new FormData();
+    formData.append("locationId", locationId);
+    formData.append("comment", comment);
+    formData.append("frontImage", {
+        uri: compressedFrontUri,
+        name: "front.jpg",
+        type: "image/jpeg",
+      } as any);
+      
+      formData.append("backImage", {
+        uri: compressedBackUri,
+        name: "back.jpg",
+        type: "image/jpeg",
+      } as any);
+      
+      const response = await api.post('/upload/create-post', formData);
+
+    return response.data;
+  } catch (error) {
+    console.error("Fehler beim Hochladen:", error);
+    throw error;
+  }
+};

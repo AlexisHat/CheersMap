@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { uploadPost } from "../services/uploadPostService";
 
 type LocationItem = {
   id: string;
@@ -33,7 +34,13 @@ export const CreatePostScreen = () => {
 
   const handleUpload = async () => {
     try {
-      await uploadPost({ location, frontUri, backUri, comment });
+      const response = await uploadPost({
+        locationId: location.id,
+        frontUri,
+        backUri,
+        comment,
+      });
+      console.log("✅ Upload erfolgreich:", response.data);
     } catch (error) {
       console.error("Fehler beim Hochladen:", error);
       setErrorMessage("Fehler beim Hochladen des Post");
