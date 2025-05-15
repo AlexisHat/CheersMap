@@ -19,7 +19,11 @@ export const captureDualPhotosWithCountdown = async (
       setCountdown(i);
       await wait(1000);
     }
-    setCountdown(null); 
+    setCountdown(null);
+  
+    setFacing("front");
+    await wait(2000); 
+
   
     const frontPhoto = await cameraRef.current.takePictureAsync({ quality: 1, skipProcessing: true });
   
