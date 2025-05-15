@@ -6,6 +6,11 @@ const postSchema = new mongoose.Schema({
     ref: "Location",
     required: true,
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   comment: { type: String, required: true },
   frontImageKey: { type: String, required: true },
   backImageKey: { type: String, required: true },
