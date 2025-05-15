@@ -11,7 +11,7 @@ const s3 = new AWS.S3({
 
 exports.validateImage = (file) => {
   const allowedTypes = ["image/jpeg", "image/png"];
-  const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+  const maxSizeInBytes = 3 * 1024 * 1024;
 
   return allowedTypes.includes(file.mimetype) && file.size <= maxSizeInBytes;
 };
@@ -31,6 +31,7 @@ exports.uploadToS3 = async (file, key) => {
 exports.createPost = async (
   locationId,
   comment,
+  userId,
   frontImageKey,
   backImageKey
 ) => {
@@ -64,6 +65,7 @@ exports.createPost = async (
 
   const post = await Post.create({
     location: locationDoc._id,
+    user: userId,
     comment,
     frontImageKey,
     backImageKey,
