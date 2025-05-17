@@ -4,6 +4,21 @@ const locationCache = require("../services/cache");
 
 const rquestCache = new NodeCache({ stdTTL: 1000 });
 
+//Funktion zum Distanzen berechnen
+const haversineDistance = (from, to) => {
+  const toRad = (x) => (x * Math.PI) / 180;
+  const R = 6371000; // Meter
+  const dLat = toRad(to.lat - from.lat);
+  const dLon = toRad(to.lng - from.lng);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(from.lat)) *
+      Math.cos(toRad(to.lat)) *
+      Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
   const cacheKey = `${lat},${long},${maxResults}`;
 
@@ -16,7 +31,7 @@ exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
   const apiKey = process.env.GOOGLE_PLACE_API_KEY;
 
   const types = ["cafe", "bakery", "bar", "restaurant"];
-  const radiusInMeters = 1075; //noch richtigen wert überlegen
+  const radiusInMeters = 100; //noch richtigen wert überlegen
 
   const response = await axios.post(
     "https://places.googleapis.com/v1/places:searchNearby",
@@ -51,14 +66,30 @@ exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
     }
   }
 
-  const mapped = places.map((place) => ({
-    name: place.displayName?.text || "Unbenannt",
-    address: place.formattedAddress,
-    id: place.id,
-  }));
-
+  const mapped = places.map((place) => {
+    const distance = Math.round(
+      haversineDistance(
+        { lat: lat, lng: long },
+        {
+          lat: place.location.latitude,
+          lng: place.location.longitude,
+        }
+      )
+    );
+  
+    return {
+      name: place.displayName?.text || "Unbenannt",
+      address: place.formattedAddress,
+      id: place.id,
+      distance: distance, // in Metern
+    };
+  });
+  
+  mapped.sort((a, b) => a.distance - b.distance);
+  
   locationCache.set(cacheKey, mapped);
   console.log("Cache miss – Daten gespeichert");
-
+  
   return mapped;
-};
+  console.log(mapped);
+};  

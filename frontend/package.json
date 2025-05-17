@@ -24,7 +24,8 @@
     "react-native": "0.79.2",
     "react-native-maps": "1.20.1",
     "zustand": "^5.0.3",
-    "expo-image-manipulator": "~13.1.6"
+    "expo-image-manipulator": "~13.1.6",
+    "expo-haptics": "~14.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

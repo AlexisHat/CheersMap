@@ -12,14 +12,14 @@ export const captureDualPhotosWithCountdown = async (
   
     const backPhoto = await cameraRef.current.takePictureAsync({ quality: 1, skipProcessing: true });
   
+    
+  
+    setFacing("front");
     for (let i = 3; i >= 1; i--) {
       setCountdown(i);
       await wait(1000);
     }
-    setCountdown(null);
-  
-    setFacing("front");
-    await wait(500); 
+    setCountdown(null); 
   
     const frontPhoto = await cameraRef.current.takePictureAsync({ quality: 1, skipProcessing: true });
   

@@ -89,6 +89,7 @@ export const SelectLocationScreen: React.FC = () => {
             onPress={() => handleSelect(item)}
           >
             <Text>{item.name}</Text>
+            <Text style={{ textAlign: "right" }}>{item.distance} m</Text>
           </TouchableOpacity>
         )}
       />
@@ -103,6 +104,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    flexDirection: "row",
   },
   item: {
     padding: 16,

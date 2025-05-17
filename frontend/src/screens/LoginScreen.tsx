@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { AuthStackParamList } from "../types/authTypes";
+import * as Haptics from 'expo-haptics'
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import {
 } from "react-native";
 import { login } from "../services/authService";
 import { updateStoredTokens } from "../helpers/authHelper";
+import { styles } from '../styles/AppStyles';
 
 export default function LoginScreen() {
   const navigation =
@@ -64,8 +66,11 @@ export default function LoginScreen() {
       />
 
       <TouchableOpacity
-        style={styles.button}
-        onPress={handleLogin}
+        style={styles.loginButton}
+        onPress={() => {
+          Haptics.impactAsync();
+          handleLogin();
+        }}
         disabled={loading}
       >
         <Text style={styles.buttonText}>
@@ -77,7 +82,7 @@ export default function LoginScreen() {
         <Text style={styles.forgotPassword}>Passwort vergessen?</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-        <Text style={{ marginTop: 20, textAlign: "center", color: "#007bff" }}>
+        <Text style={styles.forgotPassword}>
           Noch keinen Account? Jetzt registrieren
         </Text>
       </TouchableOpacity>
@@ -85,50 +90,4 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 30,
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#777",
-    marginBottom: 30,
-    textAlign: "center",
-  },
-  input: {
-    height: 50,
-    borderColor: "#ddd",
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    backgroundColor: "#f9f9f9",
-  },
-  button: {
-    backgroundColor: "#007bff",
-    paddingVertical: 15,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  buttonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  forgotPassword: {
-    marginTop: 15,
-    textAlign: "center",
-    color: "#007bff",
-    textDecorationLine: "underline",
-  },
-});
+

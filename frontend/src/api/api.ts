@@ -8,7 +8,7 @@ import {
 } from '../helpers/authHelper';
 
 const api = axios.create({
-  baseURL: 'http://192.168.178.47:8080',
+  baseURL: 'http://172.20.10.3:8080',
 });
 
 api.interceptors.request.use(async (config) => {

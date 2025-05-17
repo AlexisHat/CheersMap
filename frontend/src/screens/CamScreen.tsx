@@ -7,6 +7,7 @@ import { captureDualPhotosWithCountdown } from "../services/dualCamService";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { PostStackParamList } from "../navigation/PostStack";
+import { styles } from '../styles/AppStyles';
 
 export const CamScreen: React.FC = () => {
   const [permInfo, requestPermission] = useCameraPermissions();
@@ -18,6 +19,11 @@ export const CamScreen: React.FC = () => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [facing, setFacing] = useState<"front" | "back">("back");
 
+  const swapCameras = () => {
+    const temp = backUri;
+    setBackUri(frontUri);
+    setFrontUri(temp);
+  };
   const navigation =
     useNavigation<NativeStackNavigationProp<PostStackParamList>>();
 
@@ -60,20 +66,14 @@ export const CamScreen: React.FC = () => {
     );
   }
 
-  if (backUri && frontUri) {
+  /*if (backUri && frontUri) {
     return (
       <View style={styles.center}>
-        <View style={styles.previewRow}>
-          <Image
-            source={{ uri: backUri }}
-            style={styles.thumb}
-            contentFit="cover"
-          />
-          <Image
-            source={{ uri: frontUri }}
-            style={styles.thumb}
-            contentFit="cover"
-          />
+        <View>
+          <Image source={{ uri: backUri }} style={styles.camera} />
+      <Pressable onPress={swapCameras} style={styles.frontPreviewContainer}>
+        <Image source={{ uri: frontUri }} style={styles.frontPreview} />
+      </Pressable>
         </View>
         <Pressable onPress={reset} style={styles.button}>
           <Text style={styles.buttonText}>Neu aufnehmen</Text>
@@ -82,13 +82,44 @@ export const CamScreen: React.FC = () => {
           onPress={() =>
             navigation.navigate("SelectLocation", { backUri, frontUri })
           }
-          style={[styles.button, { backgroundColor: "#4CAF50" }]}
+          style={styles.button}
         >
           <Text style={styles.buttonText}>Weiter</Text>
         </Pressable>
       </View>
     );
-  }
+  }*/
+
+    //von Chatgpt
+    if (backUri && frontUri) {
+      return (
+        <SafeAreaView style={styles.flex}>
+          {/* Vollbild Hintergrundbild (Backkamera) */}
+          <Image source={{ uri: backUri }} style={styles.camera} />
+    
+          {/* Frontkamera oben links */}
+          <Pressable onPress={swapCameras} style={styles.frontPreviewContainer}>
+            <Image source={{ uri: frontUri }} style={styles.frontPreview} />
+          </Pressable>
+    
+          {/* Buttons unten links und rechts */}
+          <View style={styles.button}>
+            <Pressable onPress={reset} style={styles.button}>
+              <Text style={styles.buttonText}>Neu aufnehmen</Text>
+            </Pressable>
+            <Pressable
+              onPress={() =>
+                navigation.navigate("SelectLocation", { backUri, frontUri })
+              }
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Weiter</Text>
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      );
+    }
+
 
   return (
     <SafeAreaView style={styles.flex}>
@@ -115,70 +146,4 @@ export const CamScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: "#000" },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#000",
-  },
-  previewRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  thumb: {
-    width: 120,
-    height: 160,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#666",
-  },
-  overlay: {
-    position: "absolute",
-    bottom: 40,
-    width: "100%",
-    alignItems: "center",
-  },
-  countdown: {
-    fontSize: 48,
-    color: "white",
-    fontWeight: "bold",
-  },
-  shutter: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 4,
-    borderColor: "white",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  shutterInner: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "white",
-  },
-  button: {
-    marginTop: 20,
-    backgroundColor: "#444",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-  },
-  loadingText: {
-    color: "#fff",
-  },
-  permissionText: {
-    color: "#fff",
-    marginBottom: 12,
-  },
-  camera: {
-    flex: 1,
-  },
-});
+
