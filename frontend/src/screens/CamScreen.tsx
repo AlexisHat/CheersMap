@@ -93,19 +93,22 @@ export const CamScreen: React.FC = () => {
     //von Chatgpt
     if (backUri && frontUri) {
       return (
-        <SafeAreaView style={styles.flex}>
+        <SafeAreaView style={styles.container}>
           {/* Vollbild Hintergrundbild (Backkamera) */}
-          <Image source={{ uri: backUri }} style={styles.camera} />
+          <View style={{padding: 16, flex: 1}}>
+          <View style={{flex: 1, position: "relative", borderRadius: 15, overflow: "hidden",}}>
+          <Image source={{ uri: backUri }} style={styles.backPreviewImage} />
     
           {/* Frontkamera oben links */}
           <Pressable onPress={swapCameras} style={styles.frontPreviewContainer}>
             <Image source={{ uri: frontUri }} style={styles.frontPreview} />
           </Pressable>
-    
+        </View>
+        </View>
           {/* Buttons unten links und rechts */}
-          <View style={styles.button}>
-            <Pressable onPress={reset} style={styles.button}>
-              <Text style={styles.buttonText}>Neu aufnehmen</Text>
+          <View style={{ flexDirection: "row" }}>
+            <Pressable onPress={reset} style={styles.backButton}>
+              <Text style={styles.backButtonText}>Neu aufnehmen</Text>
             </Pressable>
             <Pressable
               onPress={() =>
@@ -122,7 +125,7 @@ export const CamScreen: React.FC = () => {
 
 
   return (
-    <SafeAreaView style={styles.flex}>
+    <SafeAreaView style={{flex: 1 }}>
       <CameraView
         ref={cameraRef}
         style={styles.camera}

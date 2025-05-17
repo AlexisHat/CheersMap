@@ -68,7 +68,9 @@ export default function LoginScreen() {
       <TouchableOpacity
         style={styles.loginButton}
         onPress={() => {
-          Haptics.impactAsync();
+          //Haptics.impactAsync();
+          
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           handleLogin();
         }}
         disabled={loading}

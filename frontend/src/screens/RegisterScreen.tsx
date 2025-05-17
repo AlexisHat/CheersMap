@@ -13,6 +13,7 @@ import type { AuthStackParamList } from "../types/authTypes";
 import { register } from "../services/authService";
 import { RegisterRequest } from "../types/authTypes";
 import { styles } from '../styles/AppStyles';
+import * as Haptics from 'expo-haptics'
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
@@ -100,7 +101,10 @@ export default function RegisterScreen() {
 
       <TouchableOpacity
         style={styles.registerButton}
-        onPress={handleRegister}
+        onPress={() => {
+          handleRegister();
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }}
         disabled={loading}
       >
         <Text style={styles.buttonText}>

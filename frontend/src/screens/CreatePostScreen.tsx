@@ -10,8 +10,12 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
+  SafeAreaView,
+  Keyboard,
 } from "react-native";
 import { uploadPost } from "../services/uploadPostService";
+import { styles } from '../styles/AppStyles';
 
 type LocationItem = {
   id: string;
@@ -32,6 +36,12 @@ export const CreatePostScreen = () => {
   const [comment, setComment] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  /*const swapCameras = () => {
+    const temp = backUri;
+    setBackUri(frontUri);
+    setFrontUri(temp);
+  };*/
+
   const handleUpload = async () => {
     try {
       const response = await uploadPost({
@@ -46,55 +56,49 @@ export const CreatePostScreen = () => {
       setErrorMessage("Fehler beim Hochladen des Post");
     }
   };
-
+  
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.section}>
-          <Text style={styles.heading}>📍 Ort</Text>
-          <Text style={styles.subheading}>{location.name}</Text>
-          <Text style={styles.address}>{location.address}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.heading}>📸 Deine Bilder</Text>
-          <Image
-            source={{ uri: frontUri }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-          <Image
-            source={{ uri: backUri }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.heading}>📝 Kommentar</Text>
-          <TextInput
-            style={styles.input}
+    <SafeAreaView style={{flex: 1}}>
+              {/* Vollbild Hintergrundbild (Backkamera) */}
+              <TextInput
+            style={[styles.input, { marginHorizontal: 20 }]}
             placeholder="Was macht diesen Ort besonders?"
             value={comment}
             onChangeText={setComment}
-            multiline
             maxLength={300}
+            onSubmitEditing={() => Keyboard.dismiss()}
+            returnKeyType="done"
           />
-        </View>
-
-        <TouchableOpacity style={styles.button} onPress={handleUpload}>
+              <View style={{padding: 16, flex: 1}}>
+              <View style={{flex: 1, position: "relative", borderRadius: 15, overflow: "hidden",}}>
+              <Image source={{ uri: backUri }} style={styles.backPreviewImage} />
+        
+              {/* Frontkamera oben links */}
+              <Pressable style={styles.frontPreviewContainer}>
+                <Image source={{ uri: frontUri }} style={styles.frontPreview} />
+              </Pressable>
+            </View>
+            </View>
+              {/* Buttons unten links und rechts */}
+              
+            
+          
+          
+        
+        <View style={{ flexDirection: "row" }}>
+        <TouchableOpacity style={styles.backButton}>
+          <Text style={styles.backButtonText}>📍{location.name}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.registerButton, { marginHorizontal: 20 }]} onPress={handleUpload}>
           <Text style={styles.buttonText}>Post hochladen</Text>
         </TouchableOpacity>
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </View>
+      </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+/*const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 40,
@@ -149,4 +153,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-});
+});*/

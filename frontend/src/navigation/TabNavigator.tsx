@@ -9,7 +9,10 @@ const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+    screenOptions={{
+      tabBarActiveTintColor: "#1a365c",}}
+  >
       <Tab.Screen
         name="Map"
         component={MapScreen}

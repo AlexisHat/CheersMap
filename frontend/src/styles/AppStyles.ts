@@ -16,7 +16,7 @@ export const styles = StyleSheet.create({
       },
       input: {
         height: 50,
-        borderColor: "#ddd",
+        borderColor: "#1a365c",
         borderWidth: 1,
         borderRadius: 10,
         paddingHorizontal: 16,
@@ -41,6 +41,35 @@ export const styles = StyleSheet.create({
         fontWeight: "600",
         fontSize: 16,
       },
+      backButtonText: {
+        color: "#1a365c",
+        textAlign: "center",
+        fontWeight: "600",
+        fontSize: 16,
+      },
+      backButton:{
+        
+        marginTop: 20,
+        flex: 1,
+        paddingHorizontal: 24,
+        paddingVertical: 15,
+        marginHorizontal: 8,
+         borderWidth: 2,
+         borderColor: "#1a365c",
+        backgroundColor: "#fff",
+         borderRadius: 10,
+        
+      },
+      button: {
+        marginTop: 20,
+        flex: 1,
+        paddingHorizontal: 24,
+        paddingVertical: 15,
+        marginHorizontal: 8,
+        backgroundColor: "#1a365c",
+      borderRadius: 10,
+          
+      },
       forgotPassword: {
         marginTop: 15,
         textAlign: "center",
@@ -52,12 +81,16 @@ export const styles = StyleSheet.create({
       subtitle: {
         fontSize: 16,
         color: "#777",
-        marginBottom: 150,
+        marginBottom: 15,
         textAlign: "center",
+      },
+      error: {
+        color: "red",
+        fontSize: 14,
+        marginBottom: 10,
       },
       
 //
-flex: { flex: 1, backgroundColor: "#000" },
 center: {
   flex: 1,
   alignItems: "center",
@@ -101,17 +134,7 @@ shutterInner: {
   borderRadius: 30,
   backgroundColor: "white",
 },
-button: {
-  marginTop: 20,
-  
-  paddingHorizontal: 24,
-  paddingVertical: 15,
-  
-  backgroundColor: "#1a365c",
-    
-        borderRadius: 10,
-    
-},
+
 
 loadingText: {
   color: "#fff",
@@ -123,16 +146,20 @@ permissionText: {
 camera: {
   flex: 1,
 },
-
+backPreviewImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
 frontPreviewContainer: {
     position: "absolute",
-    top: 40,
-    left: 20,
+    top: 25,
+    left: 25,
     width: 100,
     height: 140,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: "#fff",
-    borderRadius: 8,
+    borderRadius: 10,
     overflow: "hidden",
     zIndex: 10,
   },
@@ -142,6 +169,8 @@ frontPreviewContainer: {
     height: "100%",
     resizeMode: "cover",
   },
+
+  
 
 
     });
