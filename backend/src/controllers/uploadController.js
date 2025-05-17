@@ -30,6 +30,7 @@ exports.createPost = async (req, res) => {
     const post = await uploadService.createPost(
       locationId,
       comment,
+      req.user.id,
       frontImageUrlKey,
       backImageUrlKey
     );
