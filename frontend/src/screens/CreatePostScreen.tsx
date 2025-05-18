@@ -31,30 +31,42 @@ type RouteParams = {
 
 export const CreatePostScreen = () => {
   const route = useRoute();
-  const { location, backUri, frontUri } = route.params as RouteParams;
+  //const { location, backUri, frontUri } = route.params as RouteParams;
+  const { location, backUri: initialBackUri, frontUri: initialFrontUri } = route.params as RouteParams;
+   const [backUri, setBackUri] = useState<string>(initialBackUri);
+  const [frontUri, setFrontUri] = useState<string>(initialFrontUri);
+
 
   const [comment, setComment] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [swapped, setSwapped] = useState(false);
 
-  /*const swapCameras = () => {
-    const temp = backUri;
-    setBackUri(frontUri);
-    setFrontUri(temp);
-  };*/
+  const swapCameras = () => {
+    const newBack = frontUri;
+   const newFront = backUri;
+   setBackUri(newBack);
+   setFrontUri(newFront);
+   setSwapped(prev => !prev);
+  };
 
   const handleUpload = async () => {
-    try {
-      const response = await uploadPost({
-        locationId: location.id,
-        frontUri,
-        backUri,
-        comment,
-      });
-      console.log("✅ Upload erfolgreich:", response.data);
-    } catch (error) {
+    
+    const uploadFrontUri = swapped ? backUri : frontUri;
+    const uploadBackUri = swapped ? frontUri : backUri;
+
+  try {
+    const response = await uploadPost({
+      locationId: location.id,
+      frontUri: uploadFrontUri,
+      backUri: uploadBackUri,
+      comment,
+    });
+  }
+    catch (error) {
       console.error("Fehler beim Hochladen:", error);
       setErrorMessage("Fehler beim Hochladen des Post");
     }
+    console.log(uploadFrontUri);
   };
   
   return (
@@ -74,7 +86,7 @@ export const CreatePostScreen = () => {
               <Image source={{ uri: backUri }} style={styles.backPreviewImage} />
         
               {/* Frontkamera oben links */}
-              <Pressable style={styles.frontPreviewContainer}>
+              <Pressable onPress={swapCameras}  style={styles.frontPreviewContainer}>
                 <Image source={{ uri: frontUri }} style={styles.frontPreview} />
               </Pressable>
             </View>

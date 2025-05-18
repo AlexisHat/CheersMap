@@ -18,11 +18,12 @@ export const CamScreen: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [facing, setFacing] = useState<"front" | "back">("back");
-
+  const [swapped, setSwapped] = useState(false);
   const swapCameras = () => {
     const temp = backUri;
     setBackUri(frontUri);
     setFrontUri(temp);
+    setSwapped(prev => !prev);
   };
   const navigation =
     useNavigation<NativeStackNavigationProp<PostStackParamList>>();
@@ -111,11 +112,34 @@ export const CamScreen: React.FC = () => {
               <Text style={styles.backButtonText}>Neu aufnehmen</Text>
             </Pressable>
             <Pressable
-              onPress={() =>
-                navigation.navigate("SelectLocation", { backUri, frontUri })
-              }
-              style={styles.button}
-            >
+  onPress={() => {
+    //Checken, ob Kamera getauscht wurde, wenn ja zurück tauschen
+    if (swapped) {
+      
+      const newBackUri = frontUri;
+      const newFrontUri = backUri;
+
+      setBackUri(newBackUri);
+      setFrontUri(newFrontUri);
+      setSwapped(false);
+
+      
+      navigation.navigate("SelectLocation", {
+        backUri: newBackUri,
+        frontUri: newFrontUri,
+      });
+    } else {
+     
+      navigation.navigate("SelectLocation", {
+        backUri,
+        frontUri,
+        
+      });
+      console.log(frontUri);
+    }
+  }}
+  style={styles.button}
+>
               <Text style={styles.buttonText}>Weiter</Text>
             </Pressable>
           </View>

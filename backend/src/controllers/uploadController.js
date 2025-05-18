@@ -5,6 +5,7 @@ exports.createPost = async (req, res) => {
     const { locationId, comment } = req.body;
     const frontImage = req.files?.frontImage?.[0];
     const backImage = req.files?.backImage?.[0];
+    
 
     if (!locationId || !comment || !frontImage || !backImage) {
       return res.status(400).json({ message: "Missing required fields." });
