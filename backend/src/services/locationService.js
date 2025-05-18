@@ -30,7 +30,7 @@ exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
 
   const apiKey = process.env.GOOGLE_PLACE_API_KEY;
 
-  const types = ["cafe", "bakery", "bar", "restaurant"];
+  const types = ["cafe", "bakery", "bar", "restaurant", "meal_takeaway"];
   const radiusInMeters = 100; //noch richtigen wert überlegen
 
   const response = await axios.post(
