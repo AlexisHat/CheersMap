@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { AuthStackParamList } from "../types/authTypes";
-import * as Haptics from 'expo-haptics'
+
+import type { AuthStackParamList } from "../../types/authTypes";
+//import * as Haptics from "expo-haptics";
 import {
   View,
   Text,
@@ -12,9 +13,9 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import { login } from "../services/authService";
-import { updateStoredTokens } from "../helpers/authHelper";
-import { styles } from '../styles/AppStyles';
+import { styles } from "../../styles/AppStyles";
+import { login } from "../../services/authService";
+import { updateStoredTokens } from "../../helpers/authHelper";
 
 export default function LoginScreen() {
   const navigation =
@@ -69,8 +70,8 @@ export default function LoginScreen() {
         style={styles.loginButton}
         onPress={() => {
           //Haptics.impactAsync();
-          
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+          // Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           handleLogin();
         }}
         disabled={loading}
@@ -91,5 +92,3 @@ export default function LoginScreen() {
     </View>
   );
 }
-
-
