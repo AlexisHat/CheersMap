@@ -1,6 +1,6 @@
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { View, Text, Image, ScrollView } from "react-native";
-import { PostStackParamList } from "../navigation/PostStack";
+import { PostStackParamList } from "../../navigation/PostStack";
 
 export const PostDetailScreen = () => {
   type PostDetailRouteProp = RouteProp<PostStackParamList, "PostDetailScreen">;

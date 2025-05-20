@@ -12,9 +12,9 @@ import {
   SafeAreaView,
   Keyboard,
 } from "react-native";
-import { uploadPost } from "../services/uploadPostService";
-import { styles } from "../styles/AppStyles";
-import { PostStackParamList } from "../navigation/PostStack";
+import { styles } from "../../styles/AppStyles";
+import { PostStackParamList } from "../../navigation/PostStack";
+import { uploadPost } from "../../services/uploadPostService";
 
 type LocationItem = {
   id: string;

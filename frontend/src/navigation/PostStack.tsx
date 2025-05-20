@@ -1,9 +1,9 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { CamScreen } from "../screens/CamScreen";
-import { SelectLocationScreen } from "../screens/SelectLocationScreen";
-import { CreatePostScreen } from "../screens/CreatePostScreen";
+import { CamScreen } from "../screens/upload/CamScreen";
+import { SelectLocationScreen } from "../screens/upload/SelectLocationScreen";
+import { CreatePostScreen } from "../screens/upload/CreatePostScreen";
 import { LocationItem } from "../types/postTypes";
-import { PostDetailScreen } from "../screens/PostDetailScreen";
+import { PostDetailScreen } from "../screens/upload/PostDetailScreen";
 
 export type PostStackParamList = {
   Cam: undefined;

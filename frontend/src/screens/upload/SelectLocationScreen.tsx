@@ -9,11 +9,11 @@ import {
   Image
 } from "react-native";
 import * as Location from "expo-location";
-import { fetchNearbyLocations } from "../services/locationService";
+import { fetchNearbyLocations } from "../../services/locationService";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { PostStackParamList } from "../navigation/PostStack";
+import { PostStackParamList } from "../../navigation/PostStack";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { LocationItem } from "../types/postTypes";
+import { LocationItem } from "../../types/postTypes";
 
 type Props = NativeStackScreenProps<PostStackParamList, "SelectLocation">;
 const iconMap = {

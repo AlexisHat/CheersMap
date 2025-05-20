@@ -3,11 +3,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, View, Pressable, Text } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Image } from "expo-image";
-import { captureDualPhotosWithCountdown } from "../services/dualCamService";
+import { captureDualPhotosWithCountdown } from "../../services/dualCamService";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { PostStackParamList } from "../navigation/PostStack";
-import { styles } from '../styles/AppStyles';
+import { styles } from "../../styles/AppStyles";
+import type { PostStackParamList } from "../../navigation/PostStack";
 
 export const CamScreen: React.FC = () => {
   const [permInfo, requestPermission] = useCameraPermissions();
@@ -23,7 +23,7 @@ export const CamScreen: React.FC = () => {
     const temp = backUri;
     setBackUri(frontUri);
     setFrontUri(temp);
-    setSwapped(prev => !prev);
+    setSwapped((prev) => !prev);
   };
   const navigation =
     useNavigation<NativeStackNavigationProp<PostStackParamList>>();
@@ -91,65 +91,70 @@ export const CamScreen: React.FC = () => {
     );
   }*/
 
-    //von Chatgpt
-    if (backUri && frontUri) {
-      return (
-        <SafeAreaView style={styles.container}>
-          {/* Vollbild Hintergrundbild (Backkamera) */}
-          <View style={{padding: 16, flex: 1}}>
-          <View style={{flex: 1, position: "relative", borderRadius: 15, overflow: "hidden",}}>
-          <Image source={{ uri: backUri }} style={styles.backPreviewImage} />
-    
-          {/* Frontkamera oben links */}
-          <Pressable onPress={swapCameras} style={styles.frontPreviewContainer}>
-            <Image source={{ uri: frontUri }} style={styles.frontPreview} />
-          </Pressable>
-        </View>
-        </View>
-          {/* Buttons unten links und rechts */}
-          <View style={{ flexDirection: "row" }}>
-            <Pressable onPress={reset} style={styles.backButton}>
-              <Text style={styles.backButtonText}>Neu aufnehmen</Text>
-            </Pressable>
+  //von Chatgpt
+  if (backUri && frontUri) {
+    return (
+      <SafeAreaView style={styles.container}>
+        {/* Vollbild Hintergrundbild (Backkamera) */}
+        <View style={{ padding: 16, flex: 1 }}>
+          <View
+            style={{
+              flex: 1,
+              position: "relative",
+              borderRadius: 15,
+              overflow: "hidden",
+            }}
+          >
+            <Image source={{ uri: backUri }} style={styles.backPreviewImage} />
+
+            {/* Frontkamera oben links */}
             <Pressable
-  onPress={() => {
-    //Checken, ob Kamera getauscht wurde, wenn ja zurück tauschen
-    if (swapped) {
-      
-      const newBackUri = frontUri;
-      const newFrontUri = backUri;
-
-      setBackUri(newBackUri);
-      setFrontUri(newFrontUri);
-      setSwapped(false);
-
-      
-      navigation.navigate("SelectLocation", {
-        backUri: newBackUri,
-        frontUri: newFrontUri,
-      });
-    } else {
-     
-      navigation.navigate("SelectLocation", {
-        backUri,
-        frontUri,
-        
-      });
-      console.log(frontUri);
-    }
-  }}
-  style={styles.button}
->
-              <Text style={styles.buttonText}>Weiter</Text>
+              onPress={swapCameras}
+              style={styles.frontPreviewContainer}
+            >
+              <Image source={{ uri: frontUri }} style={styles.frontPreview} />
             </Pressable>
           </View>
-        </SafeAreaView>
-      );
-    }
+        </View>
+        {/* Buttons unten links und rechts */}
+        <View style={{ flexDirection: "row" }}>
+          <Pressable onPress={reset} style={styles.backButton}>
+            <Text style={styles.backButtonText}>Neu aufnehmen</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              //Checken, ob Kamera getauscht wurde, wenn ja zurück tauschen
+              if (swapped) {
+                const newBackUri = frontUri;
+                const newFrontUri = backUri;
 
+                setBackUri(newBackUri);
+                setFrontUri(newFrontUri);
+                setSwapped(false);
+
+                navigation.navigate("SelectLocation", {
+                  backUri: newBackUri,
+                  frontUri: newFrontUri,
+                });
+              } else {
+                navigation.navigate("SelectLocation", {
+                  backUri,
+                  frontUri,
+                });
+                console.log(frontUri);
+              }
+            }}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Weiter</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <SafeAreaView style={{flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }}>
       <CameraView
         ref={cameraRef}
         style={styles.camera}
@@ -172,5 +177,3 @@ export const CamScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-
