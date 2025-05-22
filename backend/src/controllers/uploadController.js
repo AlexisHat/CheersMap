@@ -1,4 +1,5 @@
 const uploadService = require("../services/uploadService");
+const { getSignedUrl } = require("../services/postService");
 
 exports.createPost = async (req, res) => {
   try {
@@ -35,9 +36,14 @@ exports.createPost = async (req, res) => {
       backImageUrlKey
     );
 
+    const frontImageUrl = getSignedUrl(frontImageUrlKey);
+    const backImageUrl = getSignedUrl(backImageUrlKey);
+
     return res.status(201).json({
       message: "Post successfully created.",
       post,
+      frontImageUrl,
+      backImageUrl,
     });
   } catch (error) {
     console.error("Error in createPost:", error);
