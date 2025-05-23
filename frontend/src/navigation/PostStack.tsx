@@ -9,7 +9,11 @@ export type PostStackParamList = {
   Cam: undefined;
   SelectLocation: { backUri: string; frontUri: string };
   CreatePost: { location: LocationItem; backUri: string; frontUri: string };
-  PostDetailScreen: { post: any };
+  PostDetailScreen: {
+    post: any;
+    frontImageUrl: string;
+    backImageUrl: string;
+  };
 };
 
 const Stack = createNativeStackNavigator<PostStackParamList>();
