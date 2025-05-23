@@ -68,7 +68,11 @@ export const CreatePostScreen = () => {
         comment,
       });
       console.log("✅ Upload erfolgreich:", response.data);
-      navigation.navigate("PostDetailScreen", { post: response.data.post });
+      navigation.navigate("PostDetailScreen", {
+        post: response.data.post,
+        frontImageUrl: response.data.frontImageUrl,
+        backImageUrl: response.data.backImageUrl,
+      });
     } catch (error) {
       console.error("Fehler beim Hochladen:", error);
       setErrorMessage("Fehler beim Hochladen des Post");
