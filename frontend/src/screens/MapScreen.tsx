@@ -1,270 +1,288 @@
-import { Text, View, StyleSheet, Platform, Image } from "react-native";
+import React, { useRef, useState, useEffect } from 'react';
+import { View, StyleSheet, Image, Text, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { useState, useEffect, useRef } from 'react';
 
+// ⚠️ Dummy-Daten für Pins
 const pins = [
-  { id: '1', latitude: 48.8566, longitude: 2.3522 }, // Paris
-  { id: '2', latitude: 48.8577, longitude: 2.3522 }, // Paris
-  { id: '3', latitude: 48.8566, longitude: 2.3511 }, // Paris
-  { id: '4', latitude: 48.8555, longitude: 2.3522 }, // Paris
-  //{ id: '2', latitude: 35.6895, longitude: 139.6917 }, // Tokyo
-  //{ id: '3', latitude: -33.8688, longitude: 151.2093 }, // Sydney
-  //{ id: '4', latitude: 40.7128, longitude: -74.006 }, // New York
+  { id: '1', latitude: 48.8566, longitude: 2.3522 },
+  { id: '2', latitude: 48.8567, longitude: 2.3523 },
+  { id: '3', latitude: 48.8565, longitude: 2.3521 },
+  { id: '4', latitude: 48.8600, longitude: 2.3500 },
 ];
-
+const debounce = (func, delay) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
+  };
 export default function MapScreen() {
-  const [region, setRegion] = useState({
-    latitude: 20,
-    longitude: 0,
-    latitudeDelta: 100,
-    longitudeDelta: 100,
-  });
-
-  const [zoomLevel, setZoomLevel] = useState(1);
-
   const mapRef = useRef(null);
+  const [region, setRegion] = useState({
+    latitude: 48.8566,
+    longitude: 2.3522,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  });
+  const [selectedPin, setSelectedPin] = useState(null);
+  
+ 
 
-  // Zoom-Level berechnen bei Region-Änderung
+  const [clusteredPins, setClusteredPins] = useState([]);
+
   useEffect(() => {
-    const zoom = Math.round(Math.log(360 / region.longitudeDelta) / Math.LN2);
-    setZoomLevel(zoom);
+    debouncedClusterPins();
   }, [region]);
+  
+
+  const handleRegionChangeComplete = (newRegion) => {
+    setRegion(newRegion);
+  };
+
+  const clusterPins = async () => {
+    if (!mapRef.current) return;
+  
+    const pixelThreshold = 50; // Abstand in px für visuelles Clustering
+    const projectedPins = await Promise.all(
+      pins.map(async (pin) => {
+        const screenPoint = await mapRef.current.pointForCoordinate({
+          latitude: pin.latitude,
+          longitude: pin.longitude,
+        });
+        return { ...pin, screenPoint };
+      })
+    );
+  
+    const clustered = [];
+    const used = new Set();
+  
+    for (let i = 0; i < projectedPins.length; i++) {
+      if (used.has(projectedPins[i].id)) continue;
+  
+      const group = [projectedPins[i]];
+      const { x: x1, y: y1 } = projectedPins[i].screenPoint;
+  
+      for (let j = i + 1; j < projectedPins.length; j++) {
+        const { x: x2, y: y2 } = projectedPins[j].screenPoint;
+        const distPx = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+        if (distPx < pixelThreshold) {
+          group.push(projectedPins[j]);
+          used.add(projectedPins[j].id);
+        }
+      }
+  
+      clustered.push({
+        id: 'cluster_' + group[0].id,
+        latitude: average(group.map(p => p.latitude)),
+        longitude: average(group.map(p => p.longitude)),
+        count: group.length,
+        pins: group,
+      });
+  
+      used.add(projectedPins[i].id);
+    }
+  
+    setClusteredPins(clustered);
+  };
+  const debouncedClusterPins = useRef(debounce(clusterPins, 300)).current;
+
+  const getDistance = (a, b) => {
+    const dx = a.latitude - b.latitude;
+    const dy = a.longitude - b.longitude;
+    return Math.sqrt(dx * dx + dy * dy) * 111000; // Meter
+  };
+
+  const average = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+
+  const renderMarkers = () => {
+    return clusteredPins.map((pin) => {
+      if (pin.count && pin.count > 1) {
+        return (
+          <Marker
+            key={pin.id}
+            coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
+          >
+            <View style={styles.cluster}>
+              <Text style={styles.clusterText}>{pin.count}</Text>
+            </View>
+          </Marker>
+        );
+      }
+
+      return (
+        <Marker
+          key={pin.id}
+          coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
+          onPress={() => setSelectedPin(pin)}
+        >
+          <Image
+            source={require('../../assets/1.jpg')}
+            style={styles.image}
+          />
+        </Marker>
+      );
+    });
+  };
 
   return (
     <View style={{ flex: 1 }}>
-    <MapView
-      ref={mapRef}
-      style={{ flex: 1 }}
-      initialRegion={region}
-      customMapStyle={cleanMapStyle}
-      onRegionChangeComplete={(newRegion) => setRegion(newRegion)}
-    >
-      {pins.map((pin) => (
-        <Marker
-           key={`${pin.id}-${zoomLevel >= 13 ? 'img' : 'dot'}`}
-           coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
-           tracksViewChanges={zoomLevel >= 13}     // nur wenn Bild gezeigt wird
-         >
-          {zoomLevel >= 13 ? (
-            <Image
-                   source={require('../../assets/1.jpg')}
-                   style={styles.image}
-                   onLoadEnd={() => mapRef.current?.setNativeProps({})} /* oder state setzen */
-                 />
-          ) : (
-            <View style={styles.dot} />
-          )}
-        </Marker>
-      ))}
-    </MapView>
-    <View pointerEvents="none" style={styles.mapOverlay} />
+      <MapView
+        ref={mapRef}
+        style={StyleSheet.absoluteFill}
+        initialRegion={region}
+        onRegionChangeComplete={handleRegionChangeComplete}
+      >
+        {renderMarkers()}
+      </MapView>
+      {selectedPin && (
+  <View style={styles.popupContainer}>
+  {/* Linker Bildbereich mit Main + Frontcam */}
+  <View style={styles.imageWrapper}>
+    <Image
+      source={require('../../assets/1.jpg')} // Main Cam
+      style={styles.mainImage}
+    />
+    <Image
+      source={require('../../assets/1.jpg')} // Front Cam (demo)
+      style={styles.frontCam}
+    />
+  </View>
+
+  {/* Rechte Textseite */}
+  <View style={styles.infoWrapper}>
+    {/* Close Button */}
+    <TouchableOpacity onPress={() => setSelectedPin(null)} style={styles.closeButton}>
+      <Text style={{ fontSize: 18 }}>✕</Text>
+    </TouchableOpacity>
+
+    {/* Profilbild + Username */}
+    <View style={styles.userRow}>
+      <Image
+        source={require('../../assets/2.jpg')} // Demo-Profilbild
+        style={styles.profilePic}
+      />
+      <Text style={styles.username}>User XY</Text>
+    </View>
+
+    {/* Ort & Kategorie */}
+    <Text style={styles.placeName}>Café Central</Text>
+    <Text style={styles.category}>Coffee • Vegan</Text>
+  </View>
+</View>
+)}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  mapOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255,255,255,0.1)", // leicht milchig
-  },
   image: {
-    width: 60,
-    height: 60,
-    borderRadius: 6,
-    borderWidth: 2,
-  borderColor: "#1a365c",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#FFF'
   },
-  dot: {
-  width: 30,
-  height: 30,
-  backgroundColor: "#1a365c",
-  borderRadius: 15, // macht ihn kreisförmig
-  alignItems: "center",
-  justifyContent: "center",
-
-  // Spitze erzeugen
-  transform: [{ rotate: "45deg" }],
-  marginBottom: 15, // Position etwas anpassen
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.3,
-  shadowRadius: 2,
-  elevation: 2,
-},
-});
-
-const cleanMapStyle = [
+  cluster: {
+    backgroundColor: '#333',
+    padding: 10,
+    borderRadius: 20,
+    borderColor: '#fff',
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  clusterText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  popupContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+    alignItems: 'flex-start',
+  },
   
-    {
-        "featureType": "all",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "weight": "2.00"
-            }
-        ]
-    },
-    {
-        "featureType": "all",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "color": "#9c9c9c"
-            }
-        ]
-    },
-    {
-        "featureType": "all",
-        "elementType": "labels.text",
-        "stylers": [
-            {
-                "visibility": "on"
-            }
-        ]
-    },
-    {
-        "featureType": "landscape",
-        "elementType": "all",
-        "stylers": [
-            {
-                "color": "#f2f2f2"
-            }
-        ]
-    },
-    {
-        "featureType": "landscape",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#ffffff"
-            }
-        ]
-    },
-    {
-        "featureType": "landscape.man_made",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#ffffff"
-            }
-        ]
-    },
-    {
-        "featureType": "poi",
-        "elementType": "all",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "all",
-        "stylers": [
-            {
-                "saturation": -100
-            },
-            {
-                "lightness": 45
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#eeeeee"
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#7b7b7b"
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "labels.text.stroke",
-        "stylers": [
-            {
-                "color": "#ffffff"
-            }
-        ]
-    },
-    {
-        "featureType": "road.highway",
-        "elementType": "all",
-        "stylers": [
-            {
-                "visibility": "simplified"
-            }
-        ]
-    },
-    {
-        "featureType": "road.arterial",
-        "elementType": "labels.icon",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "transit",
-        "elementType": "all",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "water",
-        "elementType": "all",
-        "stylers": [
-            {
-                "color": "#46bcec"
-            },
-            {
-                "visibility": "on"
-            }
-        ]
-    },
-    {
-        "featureType": "water",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#c8d7d4"
-            }
-        ]
-    },
-    {
-        "featureType": "water",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#070707"
-            }
-        ]
-    },
-    {
-        "featureType": "water",
-        "elementType": "labels.text.stroke",
-        "stylers": [
-            {
-                "color": "#ffffff"
-            }
-        ]
-    }
-
-
-
-
-];
+  imageWrapper: {
+    width: 120,
+    height: 120,
+    position: 'relative',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  
+  mainImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  
+  frontCam: {
+    width: 36,
+    height: 36,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: '#fff',
+    position: 'absolute',
+    top: 6,
+    left: 6,
+  },
+  
+  infoWrapper: {
+    flex: 1,
+    marginLeft: 12,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  
+  closeButton: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    padding: 8,
+    zIndex: 2,
+  },
+  
+  userRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    marginTop: 6,
+  },
+  
+  profilePic: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 8,
+  },
+  
+  username: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  
+  placeName: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  
+  category: {
+    fontSize: 14,
+    color: '#888',
+  },
+  
+  
+});

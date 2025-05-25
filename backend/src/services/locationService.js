@@ -82,6 +82,7 @@ exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
       address: place.formattedAddress,
       id: place.id,
       distance: distance, // in Metern
+      primaryType: place.primaryType,
     };
   });
   
