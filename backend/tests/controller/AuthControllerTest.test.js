@@ -13,6 +13,7 @@ app.use(express.json());
 app.post("/login", authController.login);
 app.post("/register", authController.register);
 app.post("/refresh", authController.refresh);
+app.post("/logout", authController.logout);
 
 jest.mock("../../src/services/AuthService", () => ({
   loginUser: jest
@@ -124,4 +125,33 @@ test("POST /refresh - ungültiger Refresh-Token", async () => {
 
   expect(res.statusCode).toBe(403);
   expect(res.body).toEqual({ message: "Ungültiger Refresh-Token" });
+});
+
+test("POST /logout - erfolgreich", async () => {
+  logoutUser.mockResolvedValue({
+    message: "Logout erfolgreich",
+  });
+
+  const res = await request(app).post("/logout").send({
+    refreshToken: "validRefreshToken",
+  });
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body).toEqual({ message: "Logout erfolgreich" });
+});
+
+test("POST /logout - ungültiger Token", async () => {
+  logoutUser.mockRejectedValueOnce({
+    status: 400,
+    message: "Refresh-Token ungültig oder nicht gefunden",
+  });
+
+  const res = await request(app).post("/logout").send({
+    refreshToken: "invalidOrMissingToken",
+  });
+
+  expect(res.statusCode).toBe(400);
+  expect(res.body).toEqual({
+    message: "Refresh-Token ungültig oder nicht gefunden",
+  });
 });
