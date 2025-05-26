@@ -12,6 +12,12 @@ const {
 exports.login = async (req, res) => {
   const { username, password } = req.body;
 
+  if (!username || !password) {
+    return res
+      .status(400)
+      .json({ message: "Username und Passwort sind erforderlich." });
+  }
+
   try {
     const tokens = await loginUser(username, password);
     res.json(tokens);
