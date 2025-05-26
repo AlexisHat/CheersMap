@@ -58,3 +58,17 @@ test("POST /login - ungültige Zugangsdaten", async () => {
   expect(res.statusCode).toBe(401);
   expect(res.body).toEqual({ message: "Ungültige Zugangsdaten" });
 });
+
+test("POST /login - Tokens sind im Response-Body enthalten", async () => {
+  const res = await request(app)
+    .post("/login")
+    .send({ username: "testuser", password: "testpass" });
+
+  expect(res.statusCode).toBe(200);
+
+  expect(res.body).toHaveProperty("accessToken");
+  expect(typeof res.body.accessToken).toBe("string");
+
+  expect(res.body).toHaveProperty("refreshToken");
+  expect(typeof res.body.refreshToken).toBe("string");
+});
