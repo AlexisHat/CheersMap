@@ -3,7 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import type { AuthStackParamList } from "../../types/authTypes";
-//import * as Haptics from "expo-haptics";
+import * as Haptics from "expo-haptics";
 import {
   View,
   Text,
@@ -71,7 +71,7 @@ export default function LoginScreen() {
         onPress={() => {
           //Haptics.impactAsync();
 
-          // Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           handleLogin();
         }}
         disabled={loading}
