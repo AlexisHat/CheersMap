@@ -9,11 +9,11 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { AuthStackParamList } from "../types/authTypes";
-import { register } from "../services/authService";
-import { RegisterRequest } from "../types/authTypes";
-import { styles } from '../styles/AppStyles';
-import * as Haptics from 'expo-haptics'
+import type { AuthStackParamList } from "../../types/authTypes";
+import { register } from "../../services/authService";
+import { RegisterRequest } from "../../types/authTypes";
+import { styles } from "../../styles/AppStyles";
+import * as Haptics from "expo-haptics";
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
@@ -120,5 +120,3 @@ export default function RegisterScreen() {
     </View>
   );
 }
-
-

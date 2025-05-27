@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   FlatList,
   TouchableOpacity,
-  Image
+  Image,
 } from "react-native";
 import * as Location from "expo-location";
 import { fetchNearbyLocations } from "../../services/locationService";
@@ -17,21 +17,18 @@ import { LocationItem } from "../../types/postTypes";
 
 type Props = NativeStackScreenProps<PostStackParamList, "SelectLocation">;
 const iconMap = {
-  
-  bar: require("../../assets/bar.png"),
-  bakery: require("../../assets/bakery.png"),
-  restaurant: require("../../assets/restaurant.png"),
-  sandwich_shop: require("../../assets/sandwich_shop.png"),
-  coffee_shop: require("../../assets/coffee_shop.png"),
-  fast_food_restarant: require("../../assets/fast_food_restaurant.png"),
-  seafood_restaurant: require("../../assets/seafood_restaurant.png"),
+  bar: require("../../../assets/bar.png"),
+  bakery: require("../../../assets/bakery.png"),
+  restaurant: require("../../../assets/restaurant.png"),
+  sandwich_shop: require("../../../assets/sandwich_shop.png"),
+  coffee_shop: require("../../../assets/coffee_shop.png"),
+  fast_food_restarant: require("../../../assets/fast_food_restaurant.png"),
+  seafood_restaurant: require("../../../assets/seafood_restaurant.png"),
   // ... weitere Icons, die du hast
 };
 
 const getIconByType = (type: string) =>
-  iconMap[type] || require("../../assets/1.jpg");
-
-
+  iconMap[type] || require("../../../assets/1.jpg");
 
 export const SelectLocationScreen: React.FC = () => {
   const [locations, setLocations] = useState<LocationItem[]>([]);
@@ -98,28 +95,29 @@ export const SelectLocationScreen: React.FC = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Wähle einen Ort</Text>
       <FlatList
-  data={locations}
-  keyExtractor={(item) => item.id}
-  renderItem={({ item }) => {
-    console.log("item", item);
-    return (
-      <TouchableOpacity style={styles.item} onPress={() => handleSelect(item)}>
-        <View style={styles.itemContent}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.placeName}>{item.name}</Text>
-            <Text style={styles.distance}>{item.distance} m</Text>
-          </View>
-          <Image
-            source={getIconByType(item.primaryType)}
-            style={styles.icon}
-          />
-        </View>
-      </TouchableOpacity>
-    );
-  }}
-  
-/>
-
+        data={locations}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => {
+          console.log("item", item);
+          return (
+            <TouchableOpacity
+              style={styles.item}
+              onPress={() => handleSelect(item)}
+            >
+              <View style={styles.itemContent}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.placeName}>{item.name}</Text>
+                  <Text style={styles.distance}>{item.distance} m</Text>
+                </View>
+                <Image
+                  source={getIconByType(item.primaryType)}
+                  style={styles.icon}
+                />
+              </View>
+            </TouchableOpacity>
+          );
+        }}
+      />
     </View>
   );
 };
@@ -140,27 +138,26 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   itemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  
+
   placeName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
-  
+
   distance: {
     fontSize: 12,
-    color: '#888',
+    color: "#888",
     marginTop: 2,
   },
-  
+
   icon: {
     width: 32,
     height: 32,
     marginLeft: 10,
-    resizeMode: 'contain',
+    resizeMode: "contain",
   },
-  
 });
