@@ -22,8 +22,8 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from "react-native";
+import { useClusters } from "../hooks/useClusters";
 import MapView, { Marker, Region } from "react-native-maps";
-import SuperCluster from "supercluster";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -95,87 +95,6 @@ const useUserLocation = () => {
   }, []);
 
   return { location, error } as const;
-};
-
-const regionToBBox = (r: Region): [number, number, number, number] => [
-  r.longitude - r.longitudeDelta / 2,
-  r.latitude - r.latitudeDelta / 2,
-  r.longitude + r.longitudeDelta / 2,
-  r.latitude + r.latitudeDelta / 2,
-];
-
-const regionToZoom = (r: Region): number =>
-  Math.round(Math.log(360 / r.longitudeDelta) / Math.LN2);
-
-// ---- type‑guard für SuperCluster ------------------------------------------------
-const isClusterFeature = (
-  f:
-    | SuperCluster.ClusterFeature<SuperCluster.ClusterProperties>
-    | SuperCluster.PointFeature<{ pinId: string }>
-): f is SuperCluster.ClusterFeature<SuperCluster.ClusterProperties> =>
-  (f as SuperCluster.ClusterFeature<SuperCluster.ClusterProperties>).properties
-    .cluster === true;
-
-const useClusters = (pins: Pin[], region: Region): ClusterPoint[] => {
-  const indexRef = useRef<SuperCluster<
-    { pinId: string },
-    SuperCluster.ClusterProperties
-  > | null>(null);
-
-  // (Re‑)Index, wenn Pins sich ändern
-  useEffect(() => {
-    const idx = new SuperCluster<
-      { pinId: string },
-      SuperCluster.ClusterProperties
-    >({ radius: 60, maxZoom: 20 });
-    idx.load(
-      pins.map((p) => ({
-        type: "Feature" as const,
-        properties: { pinId: p.id },
-        geometry: {
-          type: "Point" as const,
-          coordinates: [p.longitude, p.latitude],
-        },
-      }))
-    );
-    indexRef.current = idx;
-  }, [pins]);
-
-  return useMemo(() => {
-    if (!indexRef.current) return [];
-    const bbox = regionToBBox(region);
-    const zoom = regionToZoom(region);
-
-    return indexRef.current.getClusters(bbox, zoom).map<ClusterPoint>((c) => {
-      if (isClusterFeature(c)) {
-        const clusterId = c.id as number; // SuperCluster-API verlangt number
-        const leaves = indexRef
-          .current!.getLeaves(clusterId, Infinity)
-          .map((l) => pins.find((p) => p.id === l.properties.pinId)!)
-          .filter(Boolean);
-
-        return {
-          id: `cluster_${clusterId}`,
-          latitude: c.geometry.coordinates[1] as number,
-          longitude: c.geometry.coordinates[0] as number,
-          pointCount: c.properties.point_count,
-          clusteredPins: leaves,
-        };
-      }
-
-      // Einzelpunkt
-      const pin = pins.find(
-        (p) => p.id === (c.properties as { pinId: string }).pinId
-      )!;
-      return {
-        id: pin.id,
-        latitude: pin.latitude,
-        longitude: pin.longitude,
-        pointCount: 1,
-        pin,
-      };
-    });
-  }, [region, pins]);
 };
 
 const useDebounce = <T,>(value: T, delay = 300) => {
