@@ -24,6 +24,8 @@ import {
 } from "react-native";
 import { useClusters } from "../hooks/useClusters";
 import { InfoPopup } from "../components/InfoPopup";
+import { ClusterMarker } from "../components/ClusterMaker";
+import { PinMarker } from "../components/PinMaker";
 import MapView, { Marker, Region } from "react-native-maps";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
@@ -49,9 +51,9 @@ interface ClusterPoint {
   id: string;
   latitude: number;
   longitude: number;
-  pointCount: number; // >1 for clusters, 1 for single points
-  clusteredPins?: Pin[]; // nur für Cluster
-  pin?: Pin; // nur für einzelne Punkte
+  pointCount: number;
+  clusteredPins?: Pin[];
+  pin?: Pin;
 }
 
 // -----------------------------------------------------------------------------
@@ -64,10 +66,6 @@ const DUMMY_PINS: Pin[] = [
   { id: "3", latitude: 50.9407, longitude: 6.9527, title: "Ehrenstraße" },
   { id: "4", latitude: 50.9341, longitude: 6.9736, title: "Köln Messe/Deutz" },
 ];
-
-// -----------------------------------------------------------------------------
-// Hooks
-// -----------------------------------------------------------------------------
 
 const useUserLocation = () => {
   const [location, setLocation] = useState<Location.LocationObject | null>(
@@ -107,43 +105,6 @@ const useDebounce = <T,>(value: T, delay = 300) => {
   return debounced;
 };
 
-// -----------------------------------------------------------------------------
-// UI‑Komponenten (unverändert)
-// -----------------------------------------------------------------------------
-
-interface ClusterMarkerProps {
-  cluster: ClusterPoint;
-  onPress: (pins: Pin[]) => void;
-}
-
-const ClusterMarker: React.FC<ClusterMarkerProps> = ({ cluster, onPress }) => (
-  <Marker
-    coordinate={{ latitude: cluster.latitude, longitude: cluster.longitude }}
-    onPress={() => onPress(cluster.clusteredPins!)}
-  >
-    <View style={styles.clusterContainer}>
-      <Text style={styles.clusterText}>{cluster.pointCount}</Text>
-    </View>
-  </Marker>
-);
-
-interface PinMarkerProps {
-  pin: Pin;
-  onPress: (pin: Pin) => void;
-}
-
-const PinMarker: React.FC<PinMarkerProps> = ({ pin, onPress }) => (
-  <Marker
-    coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
-    onPress={() => onPress(pin)}
-  >
-    <Image source={require("../../assets/1.jpg")} style={styles.pinImage} />
-  </Marker>
-);
-
-// -----------------------------------------------------------------------------
-// Main Screen (unverändert außer Imports)
-// -----------------------------------------------------------------------------
 const INITIAL_REGION: Region = {
   latitude: 50.9375,
   longitude: 6.9603,
@@ -160,10 +121,9 @@ const regionChanged = (a: Region, b: Region) =>
 
 const MapScreen: React.FC = () => {
   const [liveRegion, setLiveRegion] = useState<Region>(INITIAL_REGION);
-  const debouncedRegion = useDebounce(liveRegion, 50); // nur 4×/Sek.
+  const debouncedRegion = useDebounce(liveRegion, 250);
   const mapRef = useRef<MapView>(null);
   const { location, error: locError } = useUserLocation();
-  const [region, setRegion] = useState<Region>(INITIAL_REGION);
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
   const pins = DUMMY_PINS;
   const clusters = useClusters(pins, debouncedRegion);
@@ -179,10 +139,6 @@ const MapScreen: React.FC = () => {
     }
   }, [location]);
 
-  const onRegionChangeComplete = useCallback(
-    (r: Region) => regionChanged(r, region) && setRegion(r),
-    [region]
-  );
   const centerToUser = useCallback(() => {
     if (location && mapRef.current) {
       mapRef.current.animateToRegion({
@@ -205,7 +161,6 @@ const MapScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Image
           source={require("../../assets/icon.png")}
@@ -223,7 +178,6 @@ const MapScreen: React.FC = () => {
         <ActivityIndicator style={{ marginTop: 16 }} size="large" />
       )}
 
-      {/* Map */}
       <MapView
         ref={mapRef}
         style={styles.map}
@@ -243,7 +197,6 @@ const MapScreen: React.FC = () => {
         )}
       </MapView>
 
-      {/* FAB */}
       <TouchableOpacity style={styles.fab} onPress={centerToUser}>
         <Ionicons name="navigate-outline" size={24} color="#1a365c" />
       </TouchableOpacity>
@@ -256,10 +209,6 @@ const MapScreen: React.FC = () => {
 };
 
 export default MapScreen;
-
-// -----------------------------------------------------------------------------
-// Styles (gleich geblieben)
-// -----------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
