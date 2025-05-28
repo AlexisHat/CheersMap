@@ -1,11 +1,3 @@
-// MapScreen.tsx – production‑ready, refactored React‑Native screen (patched TS‑errors)
-// -----------------------------------------------------------------------------
-// Changelog 28 May 2025
-// • Added strict type‑guard `isClusterFeature` to disambiguate SuperCluster unions
-// • Cast `clusterId` to number before calling `getLeaves` (fixes string|number union)
-// • Narrowed `point_count` access after guard – removes TS2339
-// -----------------------------------------------------------------------------
-
 import React, {
   useCallback,
   useEffect,
@@ -26,45 +18,53 @@ import { useClusters } from "../hooks/useClusters";
 import { InfoPopup } from "../components/InfoPopup";
 import { ClusterMarker } from "../components/ClusterMaker";
 import { PinMarker } from "../components/PinMaker";
+import { Pin } from "../types/mapTypes";
 import MapView, { Marker, Region } from "react-native-maps";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
-
-// -----------------------------------------------------------------------------
-// Types
-// -----------------------------------------------------------------------------
-
-export interface Pin {
-  id: string;
-  latitude: number;
-  longitude: number;
-  title?: string;
-  category?: string;
-  image?: string; // local require() or remote URL
-  user?: {
-    name: string;
-    avatar: string;
-  };
-}
-
-interface ClusterPoint {
-  id: string;
-  latitude: number;
-  longitude: number;
-  pointCount: number;
-  clusteredPins?: Pin[];
-  pin?: Pin;
-}
 
 // -----------------------------------------------------------------------------
 // Dummy‑Daten
 // -----------------------------------------------------------------------------
 
 const DUMMY_PINS: Pin[] = [
+  // Bestehende Pins
   { id: "1", latitude: 50.9375, longitude: 6.9603, title: "Kölner Dom" },
   { id: "2", latitude: 50.9382, longitude: 6.9599, title: "Domplatte" },
   { id: "3", latitude: 50.9407, longitude: 6.9527, title: "Ehrenstraße" },
   { id: "4", latitude: 50.9341, longitude: 6.9736, title: "Köln Messe/Deutz" },
+
+  // Cluster-Gruppe Dom-Nähe
+  { id: "5", latitude: 50.9376, longitude: 6.9601, title: "Severinsbrücke" },
+  {
+    id: "6",
+    latitude: 50.9373,
+    longitude: 6.9605,
+    title: "Römisch-Germanisches Museum",
+  },
+  {
+    id: "7",
+    latitude: 50.9378,
+    longitude: 6.9604,
+    title: "Hohenzollernbrücke",
+  },
+
+  // Cluster-Gruppe Deutz/Messe
+  { id: "8", latitude: 50.9338, longitude: 6.9734, title: "Lanxess Arena" },
+  { id: "9", latitude: 50.9344, longitude: 6.9738, title: "Deutzer Freiheit" },
+  { id: "10", latitude: 50.9342, longitude: 6.974, title: "Rheinpark" },
+
+  // Einzelne, verstreute Pins
+  { id: "11", latitude: 50.948, longitude: 6.931, title: "Volksgarten" },
+  { id: "12", latitude: 50.9265, longitude: 6.9624, title: "Zoo Köln" },
+  { id: "13", latitude: 50.951, longitude: 6.96, title: "Rathenauplatz" },
+  { id: "14", latitude: 50.962, longitude: 6.95, title: "Weißer Löwe" },
+  {
+    id: "15",
+    latitude: 50.943,
+    longitude: 6.979,
+    title: "Kloster Groß St. Martin",
+  },
 ];
 
 const useUserLocation = () => {
