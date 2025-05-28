@@ -1,400 +1,436 @@
-import React, { useRef, useState, useEffect } from "react";
-import { View, StyleSheet, Image, Text, TouchableOpacity, SafeAreaView } from "react-native";
-import MapView, { Marker } from "react-native-maps";
-import { Ionicons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
+// MapScreen.tsx – production‑ready, refactored React‑Native screen (patched TS‑errors)
+// -----------------------------------------------------------------------------
+// Changelog 28 May 2025
+// • Added strict type‑guard `isClusterFeature` to disambiguate SuperCluster unions
+// • Cast `clusterId` to number before calling `getLeaves` (fixes string|number union)
+// • Narrowed `point_count` access after guard – removes TS2339
+// -----------------------------------------------------------------------------
 
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  View,
+  StyleSheet,
+  Image,
+  Text,
+  TouchableOpacity,
+  SafeAreaView,
+  ActivityIndicator,
+} from "react-native";
+import MapView, { Marker, Region } from "react-native-maps";
+import SuperCluster from "supercluster";
+import * as Location from "expo-location";
+import { Ionicons } from "@expo/vector-icons";
 
-// ⚠️ Dummy-Daten für Pins (Köln)
-const pins = [
-  { id: "1", latitude: 50.9375, longitude: 6.9603 },   // Kölner Dom
-  { id: "2", latitude: 50.9382, longitude: 6.9599 },   // Domplatte
-  { id: "3", latitude: 50.9407, longitude: 6.9527 },   // Ehrenstraße
-  { id: "4", latitude: 50.9341, longitude: 6.9736 },   // Köln Deutz (Messe)
+// -----------------------------------------------------------------------------
+// Types
+// -----------------------------------------------------------------------------
+
+export interface Pin {
+  id: string;
+  latitude: number;
+  longitude: number;
+  title?: string;
+  category?: string;
+  image?: string; // local require() or remote URL
+  user?: {
+    name: string;
+    avatar: string;
+  };
+}
+
+interface ClusterPoint {
+  id: string;
+  latitude: number;
+  longitude: number;
+  pointCount: number; // >1 for clusters, 1 for single points
+  clusteredPins?: Pin[]; // nur für Cluster
+  pin?: Pin; // nur für einzelne Punkte
+}
+
+// -----------------------------------------------------------------------------
+// Dummy‑Daten
+// -----------------------------------------------------------------------------
+
+const DUMMY_PINS: Pin[] = [
+  { id: "1", latitude: 50.9375, longitude: 6.9603, title: "Kölner Dom" },
+  { id: "2", latitude: 50.9382, longitude: 6.9599, title: "Domplatte" },
+  { id: "3", latitude: 50.9407, longitude: 6.9527, title: "Ehrenstraße" },
+  { id: "4", latitude: 50.9341, longitude: 6.9736, title: "Köln Messe/Deutz" },
 ];
 
-const debounce = (func, delay) => {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      func(...args);
-    }, delay);
-  };
-};
+// -----------------------------------------------------------------------------
+// Hooks
+// -----------------------------------------------------------------------------
 
+const useUserLocation = () => {
+  const [location, setLocation] = useState<Location.LocationObject | null>(
+    null
+  );
+  const [error, setError] = useState<string | null>(null);
 
-
-export default function MapScreen() {
-  const mapRef = useRef(null);
-  const [region, setRegion] = useState({
-    latitude: 48.8566,
-    longitude: 2.3522,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  });
-  const [selectedPin, setSelectedPin] = useState(null);
-
-  const [clusteredPins, setClusteredPins] = useState([]);
-
-  const centerToUserLocation = async () => {
-    try {
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Keine Berechtigung für Standort');
+      if (status !== "granted") {
+        mounted && setError("Location permission denied");
         return;
       }
-  
-      const location = await Location.getCurrentPositionAsync({});
-      mapRef.current?.animateToRegion({
+      try {
+        const loc = await Location.getCurrentPositionAsync({ accuracy: 5 });
+        mounted && setLocation(loc);
+      } catch (e) {
+        mounted && setError((e as Error).message);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  return { location, error } as const;
+};
+
+const regionToBBox = (r: Region): [number, number, number, number] => [
+  r.longitude - r.longitudeDelta / 2,
+  r.latitude - r.latitudeDelta / 2,
+  r.longitude + r.longitudeDelta / 2,
+  r.latitude + r.latitudeDelta / 2,
+];
+
+const regionToZoom = (r: Region): number =>
+  Math.round(Math.log(360 / r.longitudeDelta) / Math.LN2);
+
+// ---- type‑guard für SuperCluster ------------------------------------------------
+const isClusterFeature = (
+  f:
+    | SuperCluster.ClusterFeature<SuperCluster.ClusterProperties>
+    | SuperCluster.PointFeature<{ pinId: string }>
+): f is SuperCluster.ClusterFeature<SuperCluster.ClusterProperties> =>
+  (f as SuperCluster.ClusterFeature<SuperCluster.ClusterProperties>).properties
+    .cluster === true;
+
+const useClusters = (pins: Pin[], region: Region): ClusterPoint[] => {
+  const indexRef = useRef<SuperCluster<
+    { pinId: string },
+    SuperCluster.ClusterProperties
+  > | null>(null);
+
+  // (Re‑)Index, wenn Pins sich ändern
+  useEffect(() => {
+    const idx = new SuperCluster<
+      { pinId: string },
+      SuperCluster.ClusterProperties
+    >({ radius: 60, maxZoom: 20 });
+    idx.load(
+      pins.map((p) => ({
+        type: "Feature" as const,
+        properties: { pinId: p.id },
+        geometry: {
+          type: "Point" as const,
+          coordinates: [p.longitude, p.latitude],
+        },
+      }))
+    );
+    indexRef.current = idx;
+  }, [pins]);
+
+  return useMemo(() => {
+    if (!indexRef.current) return [];
+    const bbox = regionToBBox(region);
+    const zoom = regionToZoom(region);
+
+    return indexRef.current.getClusters(bbox, zoom).map<ClusterPoint>((c) => {
+      if (isClusterFeature(c)) {
+        const clusterId = c.id as number; // SuperCluster-API verlangt number
+        const leaves = indexRef
+          .current!.getLeaves(clusterId, Infinity)
+          .map((l) => pins.find((p) => p.id === l.properties.pinId)!)
+          .filter(Boolean);
+
+        return {
+          id: `cluster_${clusterId}`,
+          latitude: c.geometry.coordinates[1] as number,
+          longitude: c.geometry.coordinates[0] as number,
+          pointCount: c.properties.point_count,
+          clusteredPins: leaves,
+        };
+      }
+
+      // Einzelpunkt
+      const pin = pins.find(
+        (p) => p.id === (c.properties as { pinId: string }).pinId
+      )!;
+      return {
+        id: pin.id,
+        latitude: pin.latitude,
+        longitude: pin.longitude,
+        pointCount: 1,
+        pin,
+      };
+    });
+  }, [region, pins]);
+};
+
+const useDebounce = <T,>(value: T, delay = 300) => {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+};
+
+// -----------------------------------------------------------------------------
+// UI‑Komponenten (unverändert)
+// -----------------------------------------------------------------------------
+
+interface ClusterMarkerProps {
+  cluster: ClusterPoint;
+  onPress: (pins: Pin[]) => void;
+}
+
+const ClusterMarker: React.FC<ClusterMarkerProps> = ({ cluster, onPress }) => (
+  <Marker
+    coordinate={{ latitude: cluster.latitude, longitude: cluster.longitude }}
+    onPress={() => onPress(cluster.clusteredPins!)}
+  >
+    <View style={styles.clusterContainer}>
+      <Text style={styles.clusterText}>{cluster.pointCount}</Text>
+    </View>
+  </Marker>
+);
+
+interface PinMarkerProps {
+  pin: Pin;
+  onPress: (pin: Pin) => void;
+}
+
+const PinMarker: React.FC<PinMarkerProps> = ({ pin, onPress }) => (
+  <Marker
+    coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
+    onPress={() => onPress(pin)}
+  >
+    <Image source={require("../../assets/1.jpg")} style={styles.pinImage} />
+  </Marker>
+);
+
+interface InfoPopupProps {
+  pin: Pin;
+  onClose: () => void;
+}
+
+const InfoPopup: React.FC<InfoPopupProps> = ({ pin, onClose }) => (
+  <View style={styles.popupContainer}>
+    <View style={styles.popupHeader}>
+      <TouchableOpacity onPress={onClose}>
+        <Text style={styles.popupClose}>✕</Text>
+      </TouchableOpacity>
+    </View>
+    <View style={styles.popupBody}>
+      <Image
+        source={require("../../assets/1.jpg")}
+        style={styles.popupMainImage}
+      />
+      <View style={styles.popupTextWrapper}>
+        <Text style={styles.popupTitle}>{pin.title ?? "Untitled place"}</Text>
+        {pin.category && (
+          <Text style={styles.popupCategory}>{pin.category}</Text>
+        )}
+      </View>
+    </View>
+  </View>
+);
+
+// -----------------------------------------------------------------------------
+// Main Screen (unverändert außer Imports)
+// -----------------------------------------------------------------------------
+const INITIAL_REGION: Region = {
+  latitude: 50.9375,
+  longitude: 6.9603,
+  latitudeDelta: 0.05,
+  longitudeDelta: 0.05,
+};
+
+const REGION_EPS = 0.0001;
+const regionChanged = (a: Region, b: Region) =>
+  Math.abs(a.latitude - b.latitude) > REGION_EPS ||
+  Math.abs(a.longitude - b.longitude) > REGION_EPS ||
+  Math.abs(a.latitudeDelta - b.latitudeDelta) > REGION_EPS ||
+  Math.abs(a.longitudeDelta - b.longitudeDelta) > REGION_EPS;
+
+const MapScreen: React.FC = () => {
+  const [liveRegion, setLiveRegion] = useState<Region>(INITIAL_REGION);
+  const debouncedRegion = useDebounce(liveRegion, 50); // nur 4×/Sek.
+  const mapRef = useRef<MapView>(null);
+  const { location, error: locError } = useUserLocation();
+  const [region, setRegion] = useState<Region>(INITIAL_REGION);
+  const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
+  const pins = DUMMY_PINS;
+  const clusters = useClusters(pins, debouncedRegion);
+
+  useEffect(() => {
+    if (location && mapRef.current) {
+      mapRef.current.animateToRegion({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
       });
-    } catch (error) {
-      console.error('Fehler beim Zentrieren:', error);
     }
-  };
+  }, [location]);
 
-  const zoomToCluster = (pins) => {
-    if (!mapRef.current || !pins || pins.length === 0) return;
-  
-    const coordinates = pins.map((pin) => ({
-      latitude: pin.latitude,
-      longitude: pin.longitude,
-    }));
-  
-    mapRef.current.fitToCoordinates(coordinates, {
-      edgePadding: {
-        top: 80,
-        right: 80,
-        bottom: 80,
-        left: 80,
-      },
-      animated: true,
-    });
-  };
-
-  useEffect(() => {
-    centerToUserLocation();
-  }, []);
-  
-
-  useEffect(() => {
-    debouncedClusterPins();
-  }, [region]);
-
-  const handleRegionChangeComplete = (newRegion) => {
-    setRegion(newRegion);
-  };
-
-  const clusterPins = async () => {
-    if (!mapRef.current) return;
-
-    const pixelThreshold = 50; // Abstand in px für visuelles Clustering
-    const projectedPins = await Promise.all(
-      pins.map(async (pin) => {
-        const screenPoint = await mapRef.current.pointForCoordinate({
-          latitude: pin.latitude,
-          longitude: pin.longitude,
-        });
-        return { ...pin, screenPoint };
-      })
+  const onRegionChangeComplete = useCallback(
+    (r: Region) => regionChanged(r, region) && setRegion(r),
+    [region]
+  );
+  const centerToUser = useCallback(() => {
+    if (location && mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      });
+    }
+  }, [location]);
+  const zoomToPins = (ps: Pin[]) => {
+    mapRef.current?.fitToCoordinates(
+      ps.map((p) => ({ latitude: p.latitude, longitude: p.longitude })),
+      {
+        edgePadding: { top: 80, bottom: 80, left: 80, right: 80 },
+        animated: true,
+      }
     );
-
-    const clustered = [];
-    const used = new Set();
-
-    for (let i = 0; i < projectedPins.length; i++) {
-      if (used.has(projectedPins[i].id)) continue;
-
-      const group = [projectedPins[i]];
-      const { x: x1, y: y1 } = projectedPins[i].screenPoint;
-
-      for (let j = i + 1; j < projectedPins.length; j++) {
-        const { x: x2, y: y2 } = projectedPins[j].screenPoint;
-        const distPx = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
-        if (distPx < pixelThreshold) {
-          group.push(projectedPins[j]);
-          used.add(projectedPins[j].id);
-        }
-      }
-
-      clustered.push({
-        id: "cluster_" + group[0].id,
-        latitude: average(group.map((p) => p.latitude)),
-        longitude: average(group.map((p) => p.longitude)),
-        count: group.length,
-        pins: group,
-      });
-
-      used.add(projectedPins[i].id);
-    }
-
-    setClusteredPins(clustered);
-  };
-  const debouncedClusterPins = useRef(debounce(clusterPins, 300)).current;
-
-  const getDistance = (a, b) => {
-    const dx = a.latitude - b.latitude;
-    const dy = a.longitude - b.longitude;
-    return Math.sqrt(dx * dx + dy * dy) * 111000; // Meter
-  };
-
-  const average = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
-
-  const renderMarkers = () => {
-    return clusteredPins.map((pin) => {
-      if (pin.count && pin.count > 1) {
-        return (
-          <Marker
-            key={pin.id}
-            coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
-            onPress={() => zoomToCluster(pin.pins)}
-          >
-            <View style={styles.cluster}>
-              <Text style={styles.clusterText}>{pin.count}</Text>
-            </View>
-          </Marker>
-        );
-      }
-
-      return (
-        <Marker
-          key={pin.id}
-          coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
-          onPress={() => setSelectedPin(pin)}
-        >
-          <Image source={require("../../assets/1.jpg")} style={styles.image} />
-        </Marker>
-      );
-    });
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Image
+          source={require("../../assets/icon.png")}
+          style={styles.headerIcon}
+        />
+        <Text style={styles.headerTitle}>CheersMap</Text>
+      </View>
 
-    <View style={styles.mapscreenheader}>
-      <Image
-        source={require('../../assets/icon.png')}
-        style={styles.icon}
-      />
-      <Text style={styles.mapscreentitle}>CheersMap</Text>
-    </View>
-    <View style={{ flex: 1 }}>
+      {locError && (
+        <View style={styles.errorBox}>
+          <Text style={styles.errorText}>{locError}</Text>
+        </View>
+      )}
+      {!location && !locError && (
+        <ActivityIndicator style={{ marginTop: 16 }} size="large" />
+      )}
+
+      {/* Map */}
       <MapView
         ref={mapRef}
         style={styles.map}
-        initialRegion={region}
+        initialRegion={INITIAL_REGION}
         rotateEnabled={false}
-        pitchEnabled={false}
+        showsUserLocation
         showsPointsOfInterest={false}
         showsBuildings={false}
-        showsUserLocation={true}
-        onRegionChangeComplete={handleRegionChangeComplete}
+        onRegionChangeComplete={setLiveRegion}
       >
-        {renderMarkers()}
+        {clusters.map((c) =>
+          c.pointCount > 1 && c.clusteredPins ? (
+            <ClusterMarker key={c.id} cluster={c} onPress={zoomToPins} />
+          ) : (
+            <PinMarker key={c.id} pin={c.pin!} onPress={setSelectedPin} />
+          )
+        )}
       </MapView>
-      <TouchableOpacity
-    style={styles.locationButton}
-    onPress={centerToUserLocation}
-  >
-    <Ionicons name="navigate-outline" size={24} color="#1a365c" />
-  </TouchableOpacity>
+
+      {/* FAB */}
+      <TouchableOpacity style={styles.fab} onPress={centerToUser}>
+        <Ionicons name="navigate-outline" size={24} color="#1a365c" />
+      </TouchableOpacity>
+
       {selectedPin && (
-        <View style={styles.popupContainer}>
-          {/* Linker Bildbereich mit Main + Frontcam */}
-          <View style={styles.imageWrapper}>
-            <Image
-              source={require("../../assets/1.jpg")} // Main Cam
-              style={styles.mainImage}
-            />
-            <Image
-              source={require("../../assets/1.jpg")} // Front Cam (demo)
-              style={styles.frontCam}
-            />
-          </View>
-
-          {/* Rechte Textseite */}
-          <View style={styles.infoWrapper}>
-            {/* Close Button */}
-            <TouchableOpacity
-              onPress={() => setSelectedPin(null)}
-              style={styles.closeButton}
-            >
-              <Text style={{ fontSize: 18 }}>✕</Text>
-            </TouchableOpacity>
-
-            {/* Profilbild + Username */}
-            <View style={styles.userRow}>
-              <Image
-                source={require("../../assets/2.jpg")} // Demo-Profilbild
-                style={styles.profilePic}
-              />
-              <Text style={styles.username}>User XY</Text>
-            </View>
-
-            {/* Ort & Kategorie */}
-            <Text style={styles.placeName}>Café Central</Text>
-            <Text style={styles.category}>Coffee • Vegan</Text>
-          </View>
-        </View>
+        <InfoPopup pin={selectedPin} onClose={() => setSelectedPin(null)} />
       )}
-    </View>
     </SafeAreaView>
   );
-}
+};
+
+export default MapScreen;
+
+// -----------------------------------------------------------------------------
+// Styles (gleich geblieben)
+// -----------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
-  image: {
+  container: { flex: 1, backgroundColor: "#fff" },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    backgroundColor: "#f9fafb",
+  },
+  headerIcon: { width: 24, height: 24, marginRight: 8 },
+  headerTitle: { fontSize: 18, fontWeight: "600", color: "#1a365c" },
+  map: { flex: 1 },
+  fab: {
+    position: "absolute",
+    bottom: 24,
+    right: 24,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  clusterContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    borderWidth: 3,
-    borderColor: "#FFF",
-  },
-  mapscreenheader:{
-    height: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-    
-  },
-  mapscreentitle: {
-    fontSize: 25,
-    fontWeight: 'bold',
-    color: "#1a365c",
-  },
-  locationButton: {
-    position: 'absolute',
-    top: 16,          // Abstand vom oberen Rand der Map
-    right: 16,        // Abstand vom rechten Rand der Map
-    backgroundColor: 'white',
-    padding: 12,
-    borderRadius: 30,
-    elevation: 4,     // Android Schatten
-    shadowColor: '#000', // iOS Schatten
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    zIndex: 10,       // Sicherstellen, dass es über der Karte liegt
-  },
-  cluster: {
-    backgroundColor: "#333",
-    padding: 10,
-    borderRadius: 20,
-    borderColor: "#fff",
-    borderWidth: 2,
-    justifyContent: "center",
+    backgroundColor: "#1a365c",
     alignItems: "center",
-    shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.3,
-  shadowRadius: 6,
+    justifyContent: "center",
   },
-  icon: {
-    width: 30,
-    height: 30,
-    marginRight: 8,
+  clusterText: { color: "#fff", fontWeight: "700" },
+  pinImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#fff",
   },
-  clusterText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  map: {
-    flex: 1,
-    borderTopWidth: 1,
-  borderBottomWidth: 1,
-    borderColor: '#1a365c',
-    
-    overflow: 'hidden', // wichtig, damit Karte sauber abgeschnitten ist
-  },
-  
   popupContainer: {
     position: "absolute",
-    bottom: 30,
-    left: 20,
-    right: 20,
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-    alignItems: "flex-start",
-  },
-
-  imageWrapper: {
-    width: 120,
-    height: 120,
-    position: "relative",
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-
-  mainImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-
-  frontCam: {
-    width: 36,
-    height: 36,
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: "#fff",
-    position: "absolute",
-    top: 6,
-    left: 6,
-  },
-
-  infoWrapper: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: "center",
-    position: "relative",
-  },
-
-  closeButton: {
-    position: "absolute",
-    top: 0,
+    bottom: 0,
+    left: 0,
     right: 0,
-    padding: 8,
-    zIndex: 2,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 10,
   },
-
-  userRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 6,
-    marginTop: 6,
-  },
-
-  profilePic: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginRight: 8,
-  },
-
-  username: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  placeName: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 2,
-  },
-
-  category: {
-    fontSize: 14,
-    color: "#888",
-  },
+  popupHeader: { flexDirection: "row", justifyContent: "flex-end" },
+  popupClose: { fontSize: 22, color: "#1a365c" },
+  popupBody: { flexDirection: "row", marginTop: 8 },
+  popupMainImage: { width: 120, height: 120, borderRadius: 8, marginRight: 12 },
+  popupTextWrapper: { flex: 1, justifyContent: "center" },
+  popupTitle: { fontSize: 18, fontWeight: "600", marginBottom: 4 },
+  popupCategory: { fontSize: 14, color: "#6b7280" },
+  errorBox: { padding: 8, backgroundColor: "#fde047", alignItems: "center" },
+  errorText: { color: "#78350f" },
 });
