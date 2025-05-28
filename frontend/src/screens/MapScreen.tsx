@@ -1,14 +1,18 @@
 import React, { useRef, useState, useEffect } from "react";
-import { View, StyleSheet, Image, Text, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Image, Text, TouchableOpacity, SafeAreaView } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 
-// ⚠️ Dummy-Daten für Pins
+
+// ⚠️ Dummy-Daten für Pins (Köln)
 const pins = [
-  { id: "1", latitude: 48.8566, longitude: 2.3522 },
-  { id: "2", latitude: 48.8567, longitude: 2.3523 },
-  { id: "3", latitude: 48.8565, longitude: 2.3521 },
-  { id: "4", latitude: 48.86, longitude: 2.35 },
+  { id: "1", latitude: 50.9375, longitude: 6.9603 },   // Kölner Dom
+  { id: "2", latitude: 50.9382, longitude: 6.9599 },   // Domplatte
+  { id: "3", latitude: 50.9407, longitude: 6.9527 },   // Ehrenstraße
+  { id: "4", latitude: 50.9341, longitude: 6.9736 },   // Köln Deutz (Messe)
 ];
+
 const debounce = (func, delay) => {
   let timeout;
   return (...args) => {
@@ -18,6 +22,9 @@ const debounce = (func, delay) => {
     }, delay);
   };
 };
+
+
+
 export default function MapScreen() {
   const mapRef = useRef(null);
   const [region, setRegion] = useState({
@@ -29,6 +36,50 @@ export default function MapScreen() {
   const [selectedPin, setSelectedPin] = useState(null);
 
   const [clusteredPins, setClusteredPins] = useState([]);
+
+  const centerToUserLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Keine Berechtigung für Standort');
+        return;
+      }
+  
+      const location = await Location.getCurrentPositionAsync({});
+      mapRef.current?.animateToRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+    } catch (error) {
+      console.error('Fehler beim Zentrieren:', error);
+    }
+  };
+
+  const zoomToCluster = (pins) => {
+    if (!mapRef.current || !pins || pins.length === 0) return;
+  
+    const coordinates = pins.map((pin) => ({
+      latitude: pin.latitude,
+      longitude: pin.longitude,
+    }));
+  
+    mapRef.current.fitToCoordinates(coordinates, {
+      edgePadding: {
+        top: 80,
+        right: 80,
+        bottom: 80,
+        left: 80,
+      },
+      animated: true,
+    });
+  };
+
+  useEffect(() => {
+    centerToUserLocation();
+  }, []);
+  
 
   useEffect(() => {
     debouncedClusterPins();
@@ -100,6 +151,7 @@ export default function MapScreen() {
           <Marker
             key={pin.id}
             coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
+            onPress={() => zoomToCluster(pin.pins)}
           >
             <View style={styles.cluster}>
               <Text style={styles.clusterText}>{pin.count}</Text>
@@ -121,15 +173,35 @@ export default function MapScreen() {
   };
 
   return (
+    <SafeAreaView style={{ flex: 1 }}>
+
+    <View style={styles.mapscreenheader}>
+      <Image
+        source={require('../../assets/icon.png')}
+        style={styles.icon}
+      />
+      <Text style={styles.mapscreentitle}>CheersMap</Text>
+    </View>
     <View style={{ flex: 1 }}>
       <MapView
         ref={mapRef}
-        style={StyleSheet.absoluteFill}
+        style={styles.map}
         initialRegion={region}
+        rotateEnabled={false}
+        pitchEnabled={false}
+        showsPointsOfInterest={false}
+        showsBuildings={false}
+        showsUserLocation={true}
         onRegionChangeComplete={handleRegionChangeComplete}
       >
         {renderMarkers()}
       </MapView>
+      <TouchableOpacity
+    style={styles.locationButton}
+    onPress={centerToUserLocation}
+  >
+    <Ionicons name="navigate-outline" size={24} color="#1a365c" />
+  </TouchableOpacity>
       {selectedPin && (
         <View style={styles.popupContainer}>
           {/* Linker Bildbereich mit Main + Frontcam */}
@@ -170,6 +242,7 @@ export default function MapScreen() {
         </View>
       )}
     </View>
+    </SafeAreaView>
   );
 }
 
@@ -181,6 +254,32 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: "#FFF",
   },
+  mapscreenheader:{
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    
+  },
+  mapscreentitle: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    color: "#1a365c",
+  },
+  locationButton: {
+    position: 'absolute',
+    top: 16,          // Abstand vom oberen Rand der Map
+    right: 16,        // Abstand vom rechten Rand der Map
+    backgroundColor: 'white',
+    padding: 12,
+    borderRadius: 30,
+    elevation: 4,     // Android Schatten
+    shadowColor: '#000', // iOS Schatten
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    zIndex: 10,       // Sicherstellen, dass es über der Karte liegt
+  },
   cluster: {
     backgroundColor: "#333",
     padding: 10,
@@ -189,11 +288,29 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.3,
+  shadowRadius: 6,
+  },
+  icon: {
+    width: 30,
+    height: 30,
+    marginRight: 8,
   },
   clusterText: {
     color: "#fff",
     fontWeight: "bold",
   },
+  map: {
+    flex: 1,
+    borderTopWidth: 1,
+  borderBottomWidth: 1,
+    borderColor: '#1a365c',
+    
+    overflow: 'hidden', // wichtig, damit Karte sauber abgeschnitten ist
+  },
+  
   popupContainer: {
     position: "absolute",
     bottom: 30,

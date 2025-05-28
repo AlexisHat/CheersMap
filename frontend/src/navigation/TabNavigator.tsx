@@ -17,6 +17,7 @@ export default function TabNavigator() {
         name="Map"
         component={MapScreen}
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Feather name="map" size={size} color={color} />
           ),
