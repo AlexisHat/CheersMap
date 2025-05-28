@@ -23,6 +23,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useClusters } from "../hooks/useClusters";
+import { InfoPopup } from "../components/InfoPopup";
 import MapView, { Marker, Region } from "react-native-maps";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
@@ -138,33 +139,6 @@ const PinMarker: React.FC<PinMarkerProps> = ({ pin, onPress }) => (
   >
     <Image source={require("../../assets/1.jpg")} style={styles.pinImage} />
   </Marker>
-);
-
-interface InfoPopupProps {
-  pin: Pin;
-  onClose: () => void;
-}
-
-const InfoPopup: React.FC<InfoPopupProps> = ({ pin, onClose }) => (
-  <View style={styles.popupContainer}>
-    <View style={styles.popupHeader}>
-      <TouchableOpacity onPress={onClose}>
-        <Text style={styles.popupClose}>✕</Text>
-      </TouchableOpacity>
-    </View>
-    <View style={styles.popupBody}>
-      <Image
-        source={require("../../assets/1.jpg")}
-        style={styles.popupMainImage}
-      />
-      <View style={styles.popupTextWrapper}>
-        <Text style={styles.popupTitle}>{pin.title ?? "Untitled place"}</Text>
-        {pin.category && (
-          <Text style={styles.popupCategory}>{pin.category}</Text>
-        )}
-      </View>
-    </View>
-  </View>
 );
 
 // -----------------------------------------------------------------------------
