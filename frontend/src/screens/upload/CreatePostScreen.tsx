@@ -82,7 +82,6 @@ export const CreatePostScreen = () => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      {/* Vollbild Hintergrundbild (Backkamera) */}
       <TextInput
         style={[styles.input, { marginHorizontal: 20 }]}
         placeholder="Was macht diesen Ort besonders?"
@@ -103,13 +102,11 @@ export const CreatePostScreen = () => {
         >
           <Image source={{ uri: backUri }} style={styles.backPreviewImage} />
 
-          {/* Frontkamera oben links */}
           <Pressable onPress={swapCameras} style={styles.frontPreviewContainer}>
             <Image source={{ uri: frontUri }} style={styles.frontPreview} />
           </Pressable>
         </View>
       </View>
-      {/* Buttons unten links und rechts */}
 
       <View style={{ flexDirection: "row" }}>
         <TouchableOpacity style={styles.backButton}>
