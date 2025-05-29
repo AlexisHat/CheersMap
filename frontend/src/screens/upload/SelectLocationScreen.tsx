@@ -16,15 +16,15 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { LocationItem } from "../../types/postTypes";
 
 type Props = NativeStackScreenProps<PostStackParamList, "SelectLocation">;
-const iconMap = {
+const iconMap: { [key: string]: any } = {
   bar: require("../../../assets/bar.png"),
   bakery: require("../../../assets/bakery.png"),
   restaurant: require("../../../assets/restaurant.png"),
   sandwich_shop: require("../../../assets/sandwich_shop.png"),
   coffee_shop: require("../../../assets/coffee_shop.png"),
-  fast_food_restarant: require("../../../assets/fast_food_restaurant.png"),
+  fast_food_restaurant: require("../../../assets/fast_food_restaurant.png"),
   seafood_restaurant: require("../../../assets/seafood_restaurant.png"),
-  // ... weitere Icons, die du hast
+  // ...
 };
 
 const getIconByType = (type: string) =>
