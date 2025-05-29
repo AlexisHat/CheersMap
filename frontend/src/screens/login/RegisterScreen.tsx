@@ -22,6 +22,7 @@ export default function RegisterScreen() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const navigation =
     useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
@@ -53,7 +54,33 @@ export default function RegisterScreen() {
       setLoading(false);
     }
   };
-
+  const validateField = (field: string, value: string) => {
+    let message = "";
+    if (field === "email" && !/^[\w.-]+@[\w.-]+\.[A-Za-z]{2,}$/.test(value)) {
+      message = "Bitte gib eine gültige E-Mail-Adresse ein.";
+    } else if ((field === "vorname" || field === "nachname") && !/^[a-zA-ZäöüÄÖÜß\- ]+$/.test(value)) {
+      message = "Nur Buchstaben, Leerzeichen und Bindestriche erlaubt.";
+    } else if (field === "username" && !/^[a-z0-9.-]+$/.test(value)) {
+      message = "Nur Kleinbuchstaben, Zahlen, Punkte und Bindestriche erlaubt.";
+    }
+    else if (field === "password") {
+      if (value.length < 8) {
+        message = "Passwort muss mindestens 8 Zeichen lang sein.";
+      } else if (!/[a-z]/.test(value)) {
+        message = "Passwort muss mindestens einen Kleinbuchstaben enthalten.";
+      } else if (!/[A-Z]/.test(value)) {
+        message = "Passwort muss mindestens einen Großbuchstaben enthalten.";
+      } else if (!/\d/.test(value)) {
+        message = "Passwort muss mindestens eine Zahl enthalten.";
+      }}
+    setErrors((prev) => {
+      const updated = { ...prev, [field]: message };
+      
+      return updated;
+    });
+    
+  };
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Erstelle einen Account</Text>
@@ -72,32 +99,55 @@ export default function RegisterScreen() {
         placeholder="Vorname"
         autoCapitalize="words"
         value={vorname}
-        onChangeText={setVorname}
+        onChangeText={(text) => {
+          setVorname(text);
+          validateField("vorname", text);
+        }}
       />
+      {errors.vorname ? <Text style={styles.error}>{errors.vorname}</Text> : null}
+      
+
 
       <TextInput
         style={styles.input}
         placeholder="Nachname"
         autoCapitalize="words"
         value={nachname}
-        onChangeText={setNachname}
+        onChangeText={(text) => {
+          setNachname(text);
+          validateField("nachname", text);
+        }}
+        
       />
+      {errors.nachname ? <Text style={styles.error}>{errors.nachname}</Text> : null}
 
       <TextInput
         style={styles.input}
         placeholder="Benutzername"
         autoCapitalize="none"
         value={username}
-        onChangeText={setUsername}
+        onChangeText={(text) => {
+          setUsername(text);
+          validateField("username", text);
+        }}
+        
       />
+      {errors.username ? <Text style={styles.error}>{errors.username}</Text> : null}
+
 
       <TextInput
         style={styles.input}
         placeholder="Passwort"
         secureTextEntry
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(text) => {
+          setPassword(text);
+          validateField("password", text);
+        }}
       />
+      {errors.password ? (
+  <Text style={styles.error}>{errors.password}</Text>
+) : null}
 
       <TouchableOpacity
         style={styles.registerButton}

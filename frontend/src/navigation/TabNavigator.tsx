@@ -4,6 +4,7 @@ import ProfileScreen from "../screens/ProfileScreen";
 import { CamScreen } from "../screens/upload/CamScreen";
 import Feather from "@expo/vector-icons/Feather";
 import { PostStack } from "./PostStack";
+import { View, Text } from "react-native";
 
 const Tab = createBottomTabNavigator();
 
@@ -23,15 +24,7 @@ export default function TabNavigator() {
           ),
         }}
       />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="menu" size={size} color={color} />
-          ),
-        }}
-      />
+      
       <Tab.Screen
         name="Camera"
         component={PostStack}
@@ -42,6 +35,17 @@ export default function TabNavigator() {
           ),
         }}
       />
+      
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="menu" size={size} color={color} />
+          ),
+        }}
+      />
+
     </Tab.Navigator>
   );
 }

@@ -22,6 +22,7 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 16,
         marginBottom: 12,
         backgroundColor: "#f9f9f9",
+        
       },
       registerButton: {
         backgroundColor: "#1a365c",
@@ -88,6 +89,8 @@ export const styles = StyleSheet.create({
         color: "red",
         fontSize: 14,
         marginBottom: 10,
+        marginTop: -10,
+        marginLeft: 4,
       },
       ProfilePicPreview: {
         width: 150,
@@ -111,7 +114,7 @@ export const styles = StyleSheet.create({
   borderColor: "#ccc",
   borderWidth: 1,
   borderRadius: 8,
-  maxHeight: 200,
+  maxHeight: 135,
   marginTop: 4,
   shadowColor: "#000",
   shadowOffset: { width: 0, height: 2 },

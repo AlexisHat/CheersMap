@@ -1,4 +1,4 @@
-import { View, Text, Button, StyleSheet, Image, TextInput, TouchableOpacity,  FlatList } from "react-native";
+import { View, Text, Button, StyleSheet, Image, TextInput, TouchableOpacity,  FlatList, Keyboard } from "react-native";
 import { useAuthStore } from "../store/authStore";
 import { logout } from "../services/authService";
 import React, { useState } from "react";
@@ -16,6 +16,8 @@ const ProfileScreen = () => {
     await useAuthStore.getState().logout();
   };
   const getNearestCity = async () => {
+    Keyboard.dismiss();
+    setFilteredCities([]);
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
       alert("Standortberechtigung wurde verweigert");
@@ -165,9 +167,7 @@ const ProfileScreen = () => {
       </TouchableOpacity>
     </View>
     <Button onPress={handleLogout} title="Logout" />
-    <TouchableOpacity onPress={getNearestCity}>
-  <Text style={styles.buttonText}>Standort ermitteln</Text>
-</TouchableOpacity>
+    
     </View>
   );
 };
