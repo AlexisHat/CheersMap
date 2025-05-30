@@ -9,16 +9,18 @@ import {
   FlatList,
   Keyboard,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
-import { City } from "../../types/authTypes";
+import { City, RegisterRequest } from "../../types/authTypes";
 import { findNearestCity } from "../../helpers/authHelper";
 import cities from "../../../assets/Orte-Deutschland.json";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../types/authTypes";
 import { styles } from "../../styles/AppStyles";
+import { register } from "../../services/authService";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ProfileCreation">;
 
@@ -30,6 +32,7 @@ const CompleteProfileScreen: React.FC<Props> = ({ route }) => {
   const [city, setCity] = useState("");
   const [filteredCities, setFilteredCities] = useState<City[]>([]);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const pickImage = useCallback(async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -89,19 +92,31 @@ const CompleteProfileScreen: React.FC<Props> = ({ route }) => {
     setFilteredCities([]);
   };
 
-  const handleSubmit = () => {
-    console.log("Submitting →", {
+  const handleSubmit = async () => {
+    setLoading(true);
+
+    const userData: RegisterRequest = {
       email,
       vorname,
       nachname,
       username,
       password,
-      imageUri,
-      city,
-    });
-  };
+      city: city || undefined,
+      imageUri: imageUri || undefined,
+    };
 
-  const canSubmit = !!imageUri && !!city;
+    try {
+      await register(userData);
+      console.log("Registrierung erfolgreich");
+      Alert.alert("Erfolg", "Dein Profil wurde erstellt.");
+      // z.B. navigation.replace("Home");
+    } catch (error: any) {
+      console.error("Registrierungsfehler:", error.message);
+      Alert.alert("Fehler", error.message || "Registrierung fehlgeschlagen");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -158,12 +173,16 @@ const CompleteProfileScreen: React.FC<Props> = ({ route }) => {
       <TouchableOpacity
         style={[
           styles.registerButton,
-          !canSubmit && styles.registerButtonDisabled,
+          loading && styles.registerButtonDisabled,
         ]}
         onPress={handleSubmit}
-        disabled={!canSubmit}
+        disabled={loading}
       >
-        <Text style={styles.buttonText}>Fertig</Text>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Regestrierung Abschließen</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

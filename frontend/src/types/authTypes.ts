@@ -18,8 +18,10 @@ export type RefreshResponse = {
     email: string;
     vorname: string;
     nachname: string;
-    username: string,
-    password: string,
+    username: string;
+    password: string;
+    city?: string;
+    imageUri?: string;
   };
   
   export type AuthStackParamList = {

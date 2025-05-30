@@ -21,7 +21,6 @@ export default function RegisterScreen() {
   const [nachname, setNachname] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const navigation =
@@ -41,29 +40,21 @@ export default function RegisterScreen() {
       password,
     };
 
-    try {
-      setLoading(true);
-      await register(userData);
-      Alert.alert(
-        "Erfolg",
-        "Registrierung erfolgreich! Du kannst dich nun einloggen."
-      );
-    } catch (error: any) {
-      Alert.alert("Registrierung fehlgeschlagen", error.message);
-    } finally {
-      setLoading(false);
-    }
+    navigation.navigate("ProfileCreation", userData);
   };
+
   const validateField = (field: string, value: string) => {
     let message = "";
     if (field === "email" && !/^[\w.-]+@[\w.-]+\.[A-Za-z]{2,}$/.test(value)) {
       message = "Bitte gib eine gültige E-Mail-Adresse ein.";
-    } else if ((field === "vorname" || field === "nachname") && !/^[a-zA-ZäöüÄÖÜß\- ]+$/.test(value)) {
+    } else if (
+      (field === "vorname" || field === "nachname") &&
+      !/^[a-zA-ZäöüÄÖÜß\- ]+$/.test(value)
+    ) {
       message = "Nur Buchstaben, Leerzeichen und Bindestriche erlaubt.";
     } else if (field === "username" && !/^[a-z0-9.-]+$/.test(value)) {
       message = "Nur Kleinbuchstaben, Zahlen, Punkte und Bindestriche erlaubt.";
-    }
-    else if (field === "password") {
+    } else if (field === "password") {
       if (value.length < 8) {
         message = "Passwort muss mindestens 8 Zeichen lang sein.";
       } else if (!/[a-z]/.test(value)) {
@@ -72,15 +63,15 @@ export default function RegisterScreen() {
         message = "Passwort muss mindestens einen Großbuchstaben enthalten.";
       } else if (!/\d/.test(value)) {
         message = "Passwort muss mindestens eine Zahl enthalten.";
-      }}
+      }
+    }
     setErrors((prev) => {
       const updated = { ...prev, [field]: message };
-      
+
       return updated;
     });
-    
   };
-  
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Erstelle einen Account</Text>
@@ -104,9 +95,9 @@ export default function RegisterScreen() {
           validateField("vorname", text);
         }}
       />
-      {errors.vorname ? <Text style={styles.error}>{errors.vorname}</Text> : null}
-      
-
+      {errors.vorname ? (
+        <Text style={styles.error}>{errors.vorname}</Text>
+      ) : null}
 
       <TextInput
         style={styles.input}
@@ -117,9 +108,10 @@ export default function RegisterScreen() {
           setNachname(text);
           validateField("nachname", text);
         }}
-        
       />
-      {errors.nachname ? <Text style={styles.error}>{errors.nachname}</Text> : null}
+      {errors.nachname ? (
+        <Text style={styles.error}>{errors.nachname}</Text>
+      ) : null}
 
       <TextInput
         style={styles.input}
@@ -130,10 +122,10 @@ export default function RegisterScreen() {
           setUsername(text);
           validateField("username", text);
         }}
-        
       />
-      {errors.username ? <Text style={styles.error}>{errors.username}</Text> : null}
-
+      {errors.username ? (
+        <Text style={styles.error}>{errors.username}</Text>
+      ) : null}
 
       <TextInput
         style={styles.input}
@@ -146,8 +138,8 @@ export default function RegisterScreen() {
         }}
       />
       {errors.password ? (
-  <Text style={styles.error}>{errors.password}</Text>
-) : null}
+        <Text style={styles.error}>{errors.password}</Text>
+      ) : null}
 
       <TouchableOpacity
         style={styles.registerButton}
@@ -155,11 +147,8 @@ export default function RegisterScreen() {
           handleRegister();
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }}
-        disabled={loading}
       >
-        <Text style={styles.buttonText}>
-          {loading ? "Registrieren..." : "Registrieren"}
-        </Text>
+        <Text style={styles.buttonText}>"Weiter zur Konto fertigstellung"</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate("Login")}>
