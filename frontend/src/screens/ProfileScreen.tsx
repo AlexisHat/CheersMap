@@ -1,4 +1,14 @@
-import { View, Text, Button, StyleSheet, Image, TextInput, TouchableOpacity,  FlatList, Keyboard } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  Keyboard,
+} from "react-native";
 import { useAuthStore } from "../store/authStore";
 import { logout } from "../services/authService";
 import React, { useState } from "react";
@@ -7,8 +17,6 @@ import { styles } from "../styles/AppStyles";
 import { Ionicons } from "@expo/vector-icons";
 import cities from "../../assets/Orte-Deutschland.json";
 import * as Location from "expo-location";
-
-
 
 const ProfileScreen = () => {
   const handleLogout = async () => {
@@ -23,14 +31,14 @@ const ProfileScreen = () => {
       alert("Standortberechtigung wurde verweigert");
       return;
     }
-  
+
     const location = await Location.getCurrentPositionAsync({});
     const { latitude, longitude } = location.coords;
-  
+
     // Finde nächste Stadt
     const nearest = findNearestCity(latitude, longitude);
-    setCity(nearest.name);     // dein TextInput-Feld
-    setQuery(nearest.name);    // Autocomplete auch befüllen
+    setCity(nearest.name); // dein TextInput-Feld
+    setQuery(nearest.name); // Autocomplete auch befüllen
   };
   const haversineDistance = (lat1, lon1, lat2, lon2) => {
     const toRad = (value) => (value * Math.PI) / 180;
@@ -39,16 +47,15 @@ const ProfileScreen = () => {
     const dLon = toRad(lon2 - lon1);
     const a =
       Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) ** 2;
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
-  
+
   const findNearestCity = (userLat, userLon) => {
     let nearest = null;
     let minDistance = Infinity;
-  
+
     for (const city of cities) {
       const dist = haversineDistance(
         userLat,
@@ -61,7 +68,7 @@ const ProfileScreen = () => {
         nearest = city;
       }
     }
-  
+
     return nearest;
   };
   const [query, setQuery] = useState("");
@@ -72,9 +79,7 @@ const ProfileScreen = () => {
     setQuery(text);
     if (text.length > 1) {
       const matches = cities
-        .filter((c) =>
-          c.name.toLowerCase().startsWith(text.toLowerCase())
-        )
+        .filter((c) => c.name.toLowerCase().startsWith(text.toLowerCase()))
         .slice(0, 10); // max. 10 Vorschläge
       setFilteredCities(matches);
     } else {
@@ -88,10 +93,8 @@ const ProfileScreen = () => {
     setFilteredCities([]);
   };
 
-
   //const { email, vorname, nachname, username, password } = route.params;
 
-  
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const pickImage = async () => {
@@ -109,69 +112,67 @@ const ProfileScreen = () => {
 
   return (
     <View style={styles.container}>
-      
-        
-        <View>
-      <Text style={styles.title}>Profil vervollständigen</Text>
+      <View>
+        <Text style={styles.title}>Profil vervollständigen</Text>
 
-      {imageUri ? (
-  <View style={styles.ProfilePicWrapper}>
-    <Image source={{ uri: imageUri }} style={styles.ProfilePicPreview} />
-    <TouchableOpacity style={styles.trashIcon} onPress={() => setImageUri(null)}>
-      <Ionicons name="trash" size={20} color="red" />
-    </TouchableOpacity>
-  </View>
-) : (
-  <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-    <Ionicons name="images-outline" size={48} color="#666" />
-  </TouchableOpacity>
-)}
+        {imageUri ? (
+          <View style={styles.ProfilePicWrapper}>
+            <Image
+              source={{ uri: imageUri }}
+              style={styles.ProfilePicPreview}
+            />
+            <TouchableOpacity
+              style={styles.trashIcon}
+              onPress={() => setImageUri(null)}
+            >
+              <Ionicons name="trash" size={20} color="red" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+            <Ionicons name="images-outline" size={48} color="#666" />
+          </TouchableOpacity>
+        )}
 
+        <View style={styles.inputWithIcon}>
+          <TextInput
+            placeholder="Stadt (z.B. Berlin)"
+            value={query}
+            onChangeText={handleChange}
+            style={styles.inputField}
+          />
+          <TouchableOpacity onPress={getNearestCity}>
+            <Ionicons name="locate" size={24} color="#1a365c" />
+          </TouchableOpacity>
+        </View>
 
-<View style={styles.inputWithIcon}>
-  <TextInput
-    placeholder="Stadt (z.B. Berlin)"
-    value={query}
-    onChangeText={handleChange}
-    style={styles.inputField}
-  />
-  <TouchableOpacity onPress={getNearestCity}>
-    <Ionicons name="locate" size={24} color="#1a365c" />
-  </TouchableOpacity>
-</View>
+        {filteredCities.length > 0 && (
+          <FlatList
+            data={filteredCities}
+            keyExtractor={(item) => item.name}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => handleSelect(item.name)}
+              >
+                <Text style={styles.dropdownItemText}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+            style={styles.dropdown}
+          />
+        )}
 
-{filteredCities.length > 0 && (
-  <FlatList
-    data={filteredCities}
-    keyExtractor={(item) => item.name}
-    renderItem={({ item }) => (
-      <TouchableOpacity
-        style={styles.dropdownItem}
-        onPress={() => handleSelect(item.name)}
-      >
-        <Text style={styles.dropdownItemText}>{item.name}</Text>
-      </TouchableOpacity>
-    )}
-    style={styles.dropdown}
-  />
-
-
-      )}
-
-      <TouchableOpacity
-        style={styles.registerButton}
-        onPress={() => {}}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>Registrieren</Text>
-      </TouchableOpacity>
-    </View>
-    <Button onPress={handleLogout} title="Logout" />
-    
+        <TouchableOpacity
+          style={styles.registerButton}
+          onPress={() => {}}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>Registrieren</Text>
+        </TouchableOpacity>
+      </View>
+      <Button onPress={handleLogout} title="Logout" />
     </View>
   );
 };
 
 export default ProfileScreen;
-
-
