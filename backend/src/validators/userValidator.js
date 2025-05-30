@@ -18,6 +18,8 @@ const registerSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
       "Passwort muss mindestens einen Großbuchstaben, einen Kleinbuchstaben und eine Zahl enthalten"
     ),
+  city: z.string().optional(),
+  imageUri: z.string().url().optional(),
 });
 
 module.exports = {
