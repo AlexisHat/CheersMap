@@ -17,4 +17,11 @@ router.post(
   controller.createPost
 );
 
+router.post(
+  "/profilepicture",
+  authenticateToken,
+  upload.single("frontImage"),
+  controller.uploadProfilePic
+);
+
 module.exports = router;
