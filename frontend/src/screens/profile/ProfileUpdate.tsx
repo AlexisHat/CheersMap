@@ -17,16 +17,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { City, RegisterRequest } from "../../types/authTypes";
 import { findNearestCity } from "../../helpers/authHelper";
 import cities from "../../../assets/Orte-Deutschland.json";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { AuthStackParamList } from "../../types/authTypes";
+
 import { styles } from "../../styles/AppStyles";
 import { register } from "../../services/authService";
+import { uploadProfilePicToS3 } from "../../services/uploadPostService";
 
-type Props = NativeStackScreenProps<AuthStackParamList, "ProfileCreation">;
-
-const CompleteProfileScreen: React.FC<Props> = ({ route }) => {
-  const { email, vorname, nachname, username, password } = route.params;
-
+const CompleteProfileScreen: React.FC = async () => {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
@@ -39,7 +35,7 @@ const CompleteProfileScreen: React.FC<Props> = ({ route }) => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.7,
+      quality: 0.5,
     });
 
     if (!result.canceled && result.assets.length > 0) {
@@ -92,27 +88,32 @@ const CompleteProfileScreen: React.FC<Props> = ({ route }) => {
     setFilteredCities([]);
   };
 
+  let uploadedImageUrl: string | undefined;
+
+  if (imageUri) {
+    uploadedImageUrl = await uploadProfilePicToS3(imageUri);
+    if (!uploadedImageUrl) {
+      Alert.alert("Fehler", "Bild konnte nicht hochgeladen werden.");
+      setLoading(false);
+      return;
+    }
+  }
+
   const handleSubmit = async () => {
     setLoading(true);
 
-    const userData: RegisterRequest = {
-      email,
-      vorname,
-      nachname,
-      username,
-      password,
+    const profileData = {
       city: city || undefined,
-      imageUri: imageUri || undefined,
+      imageUri: uploadedImageUrl || undefined,
     };
 
     try {
-      await register(userData);
+      await updateProfile(profileData);
       console.log("Registrierung erfolgreich");
       Alert.alert("Erfolg", "Dein Profil wurde erstellt.");
-      // z.B. navigation.replace("Home");
     } catch (error: any) {
-      console.error("Registrierungsfehler:", error.message);
-      Alert.alert("Fehler", error.message || "Registrierung fehlgeschlagen");
+      console.error("Update Fehler:", error.message);
+      Alert.alert("Fehler", error.message || "Profil Update Fehlgeschlagen");
     } finally {
       setLoading(false);
     }

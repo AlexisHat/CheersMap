@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { AuthStackParamList } from "../../types/authTypes";
@@ -21,6 +14,7 @@ export default function RegisterScreen() {
   const [nachname, setNachname] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const navigation =
@@ -40,7 +34,15 @@ export default function RegisterScreen() {
       password,
     };
 
-    navigation.navigate("ProfileCreation", userData);
+    try {
+      setLoading(true);
+      await register(userData);
+      Alert.alert("Erfolg", "Registrierung erfolgreich! ");
+    } catch (error: any) {
+      Alert.alert("Registrierung fehlgeschlagen", error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const validateField = (field: string, value: string) => {
@@ -147,8 +149,11 @@ export default function RegisterScreen() {
           handleRegister();
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }}
+        disabled={loading}
       >
-        <Text style={styles.buttonText}>"Weiter zur Konto fertigstellung"</Text>
+        <Text style={styles.buttonText}>
+          {loading ? "Registrieren..." : "Registrieren"}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate("Login")}>
