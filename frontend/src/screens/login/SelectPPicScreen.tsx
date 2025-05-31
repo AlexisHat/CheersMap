@@ -13,7 +13,6 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { styles } from "../../styles/AppStyles";
 
 
-type Props = NativeStackScreenProps<RegisterStackParamList, "SelectPPic">;
 
 export default function SelectPPicScreen({ route }: Props) {
   const { email, vorname, nachname, username, password } = route.params;
