@@ -21,6 +21,7 @@ import cities from "../../../assets/Orte-Deutschland.json";
 import { styles } from "../../styles/AppStyles";
 import { register } from "../../services/authService";
 import { uploadProfilePicToS3 } from "../../services/uploadPostService";
+import { updateProfile } from "../../services/profileService";
 
 const CompleteProfileScreen: React.FC = async () => {
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -101,14 +102,8 @@ const CompleteProfileScreen: React.FC = async () => {
 
   const handleSubmit = async () => {
     setLoading(true);
-
-    const profileData = {
-      city: city || undefined,
-      imageUri: uploadedImageUrl || undefined,
-    };
-
     try {
-      await updateProfile(profileData);
+      await updateProfile(uploadedImageUrl, city);
       console.log("Registrierung erfolgreich");
       Alert.alert("Erfolg", "Dein Profil wurde erstellt.");
     } catch (error: any) {
