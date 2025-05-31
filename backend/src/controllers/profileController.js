@@ -29,7 +29,7 @@ exports.updateProfile = async (req, res) => {
     res.status(200).json({
       message: "Profil erfolgreich aktualisiert.",
       user: {
-        profilePicSignedUrl: getSignedUrl(updatedUser.profilePicKey),
+        profilePicSignedUrl: getSignedUrl(updatedUser.profilePicKey, 7000), //MUSS NOCH GEÄNDERT WERDEN TODO
         city: updatedUser.city,
       },
     });

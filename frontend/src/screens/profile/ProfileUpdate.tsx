@@ -14,14 +14,14 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
-import { City, RegisterRequest } from "../../types/authTypes";
+import { City } from "../../types/authTypes";
 import { findNearestCity } from "../../helpers/authHelper";
 import cities from "../../../assets/Orte-Deutschland.json";
 
 import { styles } from "../../styles/AppStyles";
-import { register } from "../../services/authService";
 import { uploadProfilePicToS3 } from "../../services/uploadPostService";
 import { updateProfile } from "../../services/profileService";
+import useUserStore from "../../store/profileStore";
 
 const CompleteProfileScreen: React.FC = async () => {
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -30,6 +30,7 @@ const CompleteProfileScreen: React.FC = async () => {
   const [filteredCities, setFilteredCities] = useState<City[]>([]);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { setProfilePicUrl, setMainCity } = useUserStore();
 
   const pickImage = useCallback(async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -103,9 +104,10 @@ const CompleteProfileScreen: React.FC = async () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      await updateProfile(uploadedImageUrl, city);
-      console.log("Registrierung erfolgreich");
-      Alert.alert("Erfolg", "Dein Profil wurde erstellt.");
+      const response = await updateProfile(uploadedImageUrl, city);
+
+      setProfilePicUrl(response.profilePicSignedUrl);
+      setMainCity(response.city);
     } catch (error: any) {
       console.error("Update Fehler:", error.message);
       Alert.alert("Fehler", error.message || "Profil Update Fehlgeschlagen");

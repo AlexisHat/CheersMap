@@ -10,5 +10,5 @@ export const updateProfile = async (profilePicKey?: string, city?: string) => {
 
   const response = await axios.post("/profile/update", payload);
 
-  return response.data;
+  return response.data.user;
 };
