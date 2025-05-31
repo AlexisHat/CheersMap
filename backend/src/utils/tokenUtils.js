@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
+const cryptoSelf = require("crypto");
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
@@ -16,11 +16,11 @@ function generateAccessToken(user) {
 }
 
 const hash = (token) => {
-  return crypto.createHash("sha256").update(token).digest("hex");
+  return cryptoSelf.createHash("sha256").update(token).digest("hex");
 };
 
 function generateRefreshToken() {
-  return crypto.randomBytes(64).toString("hex");
+  return cryptoSelf.randomBytes(64).toString("hex");
 }
 
 module.exports = {
