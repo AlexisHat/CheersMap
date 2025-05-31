@@ -1,7 +1,3 @@
-const jwtProvider = require("jsonwebtoken");
-const RefreshToken = require("../models/RefreshToken");
-const bcrypt = require("bcryptjs");
-const User = require("../models/User");
 const {
   loginUser,
   registerUser,

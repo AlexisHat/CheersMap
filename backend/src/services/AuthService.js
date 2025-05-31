@@ -64,8 +64,7 @@ const registerUser = async (userData) => {
     throw { status: 400, message: errorMessage };
   }
 
-  const { vorname, nachname, email, username, password, city, imageUri } =
-    parsed.data;
+  const { vorname, nachname, email, username, password } = parsed.data;
 
   const existingUser = await User.findOne({ $or: [{ username }, { email }] });
   if (existingUser) {
