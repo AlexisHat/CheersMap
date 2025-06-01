@@ -22,8 +22,7 @@ import { styles } from "../../styles/AppStyles";
 import { uploadProfilePicToS3 } from "../../services/uploadPostService";
 import { updateProfile } from "../../services/profileService";
 import useUserStore from "../../store/profileStore";
-
-const ProfileUpdateScreen: React.FC = async () => {
+const ProfileUpdateScreen: React.FC = () => {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
@@ -90,22 +89,20 @@ const ProfileUpdateScreen: React.FC = async () => {
     setFilteredCities([]);
   };
 
-  let uploadedImageUrl: string | undefined;
-
-  if (imageUri) {
-    uploadedImageUrl = await uploadProfilePicToS3(imageUri);
-    if (!uploadedImageUrl) {
-      Alert.alert("Fehler", "Bild konnte nicht hochgeladen werden.");
-      setLoading(false);
-      return;
-    }
-  }
-
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const response = await updateProfile(uploadedImageUrl, city);
+      let uploadedImageUrl: string | undefined;
 
+      if (imageUri) {
+        uploadedImageUrl = await uploadProfilePicToS3(imageUri);
+        if (!uploadedImageUrl) {
+          Alert.alert("Fehler", "Bild konnte nicht hochgeladen werden.");
+          return;
+        }
+      }
+
+      const response = await updateProfile(uploadedImageUrl, city);
       setProfilePicUrl(response.profilePicSignedUrl);
       setMainCity(response.city);
     } catch (error: any) {
