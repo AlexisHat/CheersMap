@@ -10,6 +10,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 import ProfileScreen from "../screens/profile/ProfileScreen";
 import ProfileUpdateScreen from "../screens/profile/ProfileUpdateScreen";
+import LogoutDrawerItem from "../components/LogoutDrawerItem";
 
 const Drawer = createDrawerNavigator();
 
@@ -17,17 +18,7 @@ const CustomDrawerContent: React.FC<any> = (props) => (
   <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
     <DrawerItemList {...props} />
     <View style={{ flex: 1 }} />
-    <DrawerItem
-      label="Logout"
-      onPress={() => {
-        props.navigation.closeDrawer(); // TODO: später durch echte Logout-Funktion ersetzen
-      }}
-      icon={({ size, color }) => (
-        <MaterialIcons name="logout" size={size} color={color} />
-      )}
-      style={{ marginBottom: 4 }}
-      labelStyle={{ fontWeight: "600" }}
-    />
+    <LogoutDrawerItem navigation={props.navigation} />
   </DrawerContentScrollView>
 );
 
