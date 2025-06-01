@@ -1,178 +1,235 @@
+import React from "react";
 import {
   View,
   Text,
-  Button,
   StyleSheet,
   Image,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-  Keyboard,
+  Pressable,
+  useWindowDimensions,
 } from "react-native";
-import { useAuthStore } from "../store/authStore";
-import { logout } from "../services/authService";
-import React, { useState } from "react";
-import * as ImagePicker from "expo-image-picker";
-import { styles } from "../styles/AppStyles";
-import { Ionicons } from "@expo/vector-icons";
-import cities from "../../assets/Orte-Deutschland.json";
-import * as Location from "expo-location";
+import {
+  NavigationContainer,
+  ParamListBase,
+  useNavigation,
+} from "@react-navigation/native";
+import {
+  createDrawerNavigator,
+  DrawerContentScrollView,
+  DrawerItemList,
+  DrawerItem,
+  DrawerNavigationProp,
+} from "@react-navigation/drawer";
+import { MaterialIcons } from "@expo/vector-icons";
+import ProfileUpdateScreen from "./profile/ProfileUpdate";
 
-const ProfileScreen = () => {
-  const handleLogout = async () => {
-    await logout();
-    await useAuthStore.getState().logout();
-  };
-  const getNearestCity = async () => {
-    Keyboard.dismiss();
-    setFilteredCities([]);
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      alert("Standortberechtigung wurde verweigert");
-      return;
-    }
+// ────────────────────────────────────────────────────────────────────────────────
+// Types
+// ────────────────────────────────────────────────────────────────────────────────
 
-    const location = await Location.getCurrentPositionAsync({});
-    const { latitude, longitude } = location.coords;
+type User = {
+  id: string;
+  fullName: string;
+  avatarUrl?: string | null;
+  followers: number;
+  following: number;
+};
 
-    // Finde nächste Stadt
-    const nearest = findNearestCity(latitude, longitude);
-    setCity(nearest.name); // dein TextInput-Feld
-    setQuery(nearest.name); // Autocomplete auch befüllen
-  };
-  const haversineDistance = (lat1, lon1, lat2, lon2) => {
-    const toRad = (value) => (value * Math.PI) / 180;
-    const R = 6371; // Erdradius in km
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
+// Replace this with your real user/auth context or Redux selector
+const mockUser: User = {
+  id: "1",
+  fullName: "John Doe",
+  avatarUrl: null,
+  followers: 391,
+  following: 210,
+};
 
-  const findNearestCity = (userLat, userLon) => {
-    let nearest = null;
-    let minDistance = Infinity;
+// ────────────────────────────────────────────────────────────────────────────────
+// Reusable Components
+// ────────────────────────────────────────────────────────────────────────────────
 
-    for (const city of cities) {
-      const dist = haversineDistance(
-        userLat,
-        userLon,
-        parseFloat(city.lon),
-        parseFloat(city.lat)
-      );
-      if (dist < minDistance) {
-        minDistance = dist;
-        nearest = city;
-      }
-    }
-
-    return nearest;
-  };
-  const [query, setQuery] = useState("");
-  const [filteredCities, setFilteredCities] = useState([]);
-  const [city, setCity] = useState("");
-
-  const handleChange = (text: string) => {
-    setQuery(text);
-    if (text.length > 1) {
-      const matches = cities
-        .filter((c) => c.name.toLowerCase().startsWith(text.toLowerCase()))
-        .slice(0, 10); // max. 10 Vorschläge
-      setFilteredCities(matches);
-    } else {
-      setFilteredCities([]);
-    }
-  };
-
-  const handleSelect = (cityName: string) => {
-    setCity(cityName);
-    setQuery(cityName);
-    setFilteredCities([]);
-  };
-
-  //const { email, vorname, nachname, username, password } = route.params;
-
-  const [imageUri, setImageUri] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
-
-    if (!result.canceled && result.assets.length > 0) {
-      setImageUri(result.assets[0].uri);
-    }
-  };
-
+const ProfileAvatar: React.FC<{ uri?: string | null; size?: number }> = ({
+  uri,
+  size = 120,
+}) => {
+  if (uri) {
+    return (
+      <Image
+        source={{ uri }}
+        style={{ width: size, height: size, borderRadius: size / 2 }}
+        accessibilityLabel="Profilbild"
+      />
+    );
+  }
   return (
-    <View style={styles.container}>
-      <View>
-        <Text style={styles.title}>Profil vervollständigen</Text>
-
-        {imageUri ? (
-          <View style={styles.ProfilePicWrapper}>
-            <Image
-              source={{ uri: imageUri }}
-              style={styles.ProfilePicPreview}
-            />
-            <TouchableOpacity
-              style={styles.trashIcon}
-              onPress={() => setImageUri(null)}
-            >
-              <Ionicons name="trash" size={20} color="red" />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-            <Ionicons name="images-outline" size={48} color="#666" />
-          </TouchableOpacity>
-        )}
-
-        <View style={styles.inputWithIcon}>
-          <TextInput
-            placeholder="Stadt (z.B. Berlin)"
-            value={query}
-            onChangeText={handleChange}
-            style={styles.inputField}
-          />
-          <TouchableOpacity onPress={getNearestCity}>
-            <Ionicons name="locate" size={24} color="#1a365c" />
-          </TouchableOpacity>
-        </View>
-
-        {filteredCities.length > 0 && (
-          <FlatList
-            data={filteredCities}
-            keyExtractor={(item) => item.name}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => handleSelect(item.name)}
-              >
-                <Text style={styles.dropdownItemText}>{item.name}</Text>
-              </TouchableOpacity>
-            )}
-            style={styles.dropdown}
-          />
-        )}
-
-        <TouchableOpacity
-          style={styles.registerButton}
-          onPress={() => {}}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>Registrieren</Text>
-        </TouchableOpacity>
-      </View>
-      <Button onPress={handleLogout} title="Logout" />
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: "#e4e4e7",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <MaterialIcons name="person" size={size * 0.6} color="#a3a3a3" />
     </View>
   );
 };
 
-export default ProfileScreen;
+const StatBox: React.FC<{ label: string; value: number }> = ({
+  label,
+  value,
+}) => (
+  <View style={styles.statBox}>
+    <Text style={styles.statValue}>{value}</Text>
+    <Text style={styles.statLabel}>{label}</Text>
+  </View>
+);
+
+// ────────────────────────────────────────────────────────────────────────────────
+// Screens
+// ────────────────────────────────────────────────────────────────────────────────
+
+type DrawerNavProp = DrawerNavigationProp<ParamListBase>;
+
+const ProfileScreen: React.FC = () => {
+  const navigation = useNavigation<DrawerNavProp>();
+  const { width } = useWindowDimensions();
+  const avatarSize = width * 0.35;
+  const user = mockUser; // Replace with real user data
+
+  // Add the hamburger icon into the header
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: user.fullName,
+      // We override headerLeft so the default icon does not disappear when customising the header.
+      headerLeft: () => (
+        <Pressable
+          accessibilityLabel="Öffne Menü"
+          hitSlop={8}
+          onPress={() => navigation.toggleDrawer()}
+          style={{ paddingHorizontal: 12 }}
+        >
+          <MaterialIcons name="menu" size={24} color="#000" />
+        </Pressable>
+      ),
+      headerTitleAlign: "center",
+    });
+  }, [navigation, user.fullName]);
+
+  return (
+    <View style={styles.container}>
+      <ProfileAvatar uri={user.avatarUrl} size={avatarSize} />
+      <View style={styles.statsRow}>
+        <StatBox label="Follower" value={user.followers} />
+        <StatBox label="Folgt" value={user.following} />
+      </View>
+    </View>
+  );
+};
+
+const EditAccountScreen: React.FC = () => (
+  <View style={styles.centered}>
+    <Text style={styles.placeholderText}>Bildschirm "Konto bearbeiten"</Text>
+  </View>
+);
+
+// ────────────────────────────────────────────────────────────────────────────────
+// Drawer Navigator
+// ────────────────────────────────────────────────────────────────────────────────
+
+const Drawer = createDrawerNavigator();
+
+const CustomDrawerContent: React.FC<any> = (props) => (
+  <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
+    <DrawerItemList {...props} />
+    <View style={{ flex: 1 }} />
+    <DrawerItem
+      label="Logout"
+      onPress={() => {
+        props.navigation.closeDrawer();
+      }}
+      icon={({ size, color }) => (
+        <MaterialIcons name="logout" size={size} color={color} />
+      )}
+      style={{ marginBottom: 4 }}
+      labelStyle={{ fontWeight: "600" }}
+    />
+  </DrawerContentScrollView>
+);
+
+const DrawerNavigator = () => (
+  <Drawer.Navigator
+    drawerContent={(props) => <CustomDrawerContent {...props} />}
+    screenOptions={{
+      headerTitleAlign: "center",
+      drawerType: "slide",
+      drawerActiveTintColor: "#1d4ed8",
+      drawerLabelStyle: { fontSize: 16 },
+    }}
+  >
+    <Drawer.Screen
+      name="Profil"
+      component={ProfileScreen}
+      options={{ drawerLabel: "Profil" }}
+    />
+    <Drawer.Screen
+      name="EditAccount"
+      component={ProfileUpdateScreen}
+      options={{ drawerLabel: "Konto bearbeiten" }}
+    />
+  </Drawer.Navigator>
+);
+
+interface Props {
+  nested?: boolean;
+}
+
+const ProfileNavigator: React.FC<Props> = ({ nested = false }) => {
+  if (nested) {
+    return <DrawerNavigator />;
+  }
+  return (
+    <NavigationContainer>
+      <DrawerNavigator />
+    </NavigationContainer>
+  );
+};
+
+export default ProfileNavigator;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 32,
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  statsRow: {
+    flexDirection: "row",
+    marginTop: 24,
+  },
+  statBox: {
+    alignItems: "center",
+    marginHorizontal: 16,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+  statLabel: {
+    fontSize: 14,
+    color: "#6b7280",
+  },
+  centered: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+  },
+  placeholderText: {
+    fontSize: 18,
+    color: "#6b7280",
+  },
+});

@@ -23,7 +23,7 @@ import { uploadProfilePicToS3 } from "../../services/uploadPostService";
 import { updateProfile } from "../../services/profileService";
 import useUserStore from "../../store/profileStore";
 
-const CompleteProfileScreen: React.FC = async () => {
+const ProfileUpdateScreen: React.FC = async () => {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
@@ -186,4 +186,4 @@ const CompleteProfileScreen: React.FC = async () => {
   );
 };
 
-export default CompleteProfileScreen;
+export default ProfileUpdateScreen;

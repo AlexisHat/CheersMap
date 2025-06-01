@@ -5,15 +5,17 @@ import { CamScreen } from "../screens/upload/CamScreen";
 import Feather from "@expo/vector-icons/Feather";
 import { PostStack } from "./PostStack";
 import { View, Text } from "react-native";
+import ProfileNavigator from "../screens/ProfileScreen";
 
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
   return (
     <Tab.Navigator
-    screenOptions={{
-      tabBarActiveTintColor: "#1a365c",}}
-  >
+      screenOptions={{
+        tabBarActiveTintColor: "#1a365c",
+      }}
+    >
       <Tab.Screen
         name="Map"
         component={MapScreen}
@@ -24,7 +26,7 @@ export default function TabNavigator() {
           ),
         }}
       />
-      
+
       <Tab.Screen
         name="Camera"
         component={PostStack}
@@ -35,17 +37,16 @@ export default function TabNavigator() {
           ),
         }}
       />
-      
+
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={() => <ProfileNavigator nested />}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Feather name="menu" size={size} color={color} />
+            <Feather name="user" size={size} color={color} />
           ),
         }}
       />
-
     </Tab.Navigator>
   );
 }
