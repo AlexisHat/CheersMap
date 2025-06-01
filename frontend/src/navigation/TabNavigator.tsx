@@ -40,6 +40,7 @@ export default function TabNavigator() {
         name="Profile"
         component={ProfileNavigator}
         options={{
+          headerShown: false, // ← verhindert doppelten Header
           tabBarIcon: ({ color, size }) => (
             <Feather name="user" size={size} color={color} />
           ),

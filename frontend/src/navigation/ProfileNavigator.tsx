@@ -1,4 +1,3 @@
-// navigation/ProfileNavigator.tsx
 import React from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import {
@@ -21,7 +20,7 @@ const CustomDrawerContent: React.FC<any> = (props) => (
     <DrawerItem
       label="Logout"
       onPress={() => {
-        props.navigation.closeDrawer();
+        props.navigation.closeDrawer(); // TODO: später durch echte Logout-Funktion ersetzen
       }}
       icon={({ size, color }) => (
         <MaterialIcons name="logout" size={size} color={color} />
@@ -38,6 +37,7 @@ const ProfileNavigator: React.FC = () => (
     screenOptions={{
       headerTitleAlign: "center",
       drawerType: "slide",
+      drawerPosition: "right",
       drawerActiveTintColor: "#1d4ed8",
       drawerLabelStyle: { fontSize: 16 },
     }}
@@ -49,6 +49,7 @@ const ProfileNavigator: React.FC = () => (
         drawerLabel: "Profil",
       }}
     />
+
     <Drawer.Screen
       name="EditAccount"
       component={ProfileUpdateScreen}
