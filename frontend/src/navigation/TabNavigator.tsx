@@ -1,11 +1,9 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MapScreen from "../screens/MapScreen";
-import ProfileScreen from "../screens/ProfileScreen";
-import { CamScreen } from "../screens/upload/CamScreen";
+
 import Feather from "@expo/vector-icons/Feather";
 import { PostStack } from "./PostStack";
-import { View, Text } from "react-native";
-import ProfileNavigator from "../screens/ProfileScreen";
+import ProfileNavigator from "./ProfileNavigator";
 
 const Tab = createBottomTabNavigator();
 
@@ -40,7 +38,7 @@ export default function TabNavigator() {
 
       <Tab.Screen
         name="Profile"
-        component={() => <ProfileNavigator nested />}
+        component={ProfileNavigator}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Feather name="user" size={size} color={color} />
