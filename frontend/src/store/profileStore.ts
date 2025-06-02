@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { devtools, persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface UserState {
   profilePicUrl: string | null;
@@ -28,6 +29,7 @@ export const useUserStore = create<UserState>()(
       {
         name: "user-store",
         version: 1,
+        storage: createJSONStorage(() => AsyncStorage),
         partialize: (state) => ({
           profilePicUrl: state.profilePicUrl,
           city: state.city,
@@ -39,5 +41,3 @@ export const useUserStore = create<UserState>()(
     )
   )
 );
-
-export default useUserStore;

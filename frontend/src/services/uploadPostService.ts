@@ -55,7 +55,7 @@ export const uploadProfilePicToS3 = async (pbUri: string) => {
 
     const response = await api.post("/upload/profilepicture", formData);
 
-    return response.data;
+    return response.data.key;
   } catch (error) {
     console.error("Fehler beim Hochladen:", error);
     throw error;
