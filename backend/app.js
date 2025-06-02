@@ -14,7 +14,7 @@ app.use("/auth", authRouter);
 
 app.use("/locations", locationRoutes);
 
-app.use("profile", profileRoutes);
+app.use("/profile", profileRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "❌ Route nicht gefunden" });

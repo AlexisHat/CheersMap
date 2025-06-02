@@ -6,6 +6,6 @@ const controller = require("../controllers/profileController");
 
 router.use(authenticateToken);
 
-router.get("/update", authenticateToken, controller.updateProfile);
+router.post("/update", authenticateToken, controller.updateProfile);
 
 module.exports = router;
