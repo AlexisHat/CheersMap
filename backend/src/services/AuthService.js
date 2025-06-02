@@ -7,6 +7,7 @@ const {
   hash,
   generateRefreshToken,
 } = require("../utils/tokenUtils");
+const { getSignedUrl } = require("./postService");
 
 const handleRefreshToken = async (incomingToken) => {
   if (!incomingToken) {
@@ -54,7 +55,23 @@ const loginUser = async (username, password) => {
   const accessToken = generateAccessToken(user);
   const refreshToken = await createAndStoreRefreshToken(user);
 
-  return { accessToken, refreshToken };
+  const signedProfilePicUrl = user.profilePicKey
+    ? getSignedUrl(user.profilePicKey, 10000) //Noch ändern TODO zahl
+    : null;
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user._id,
+      vorname: user.vorname,
+      nachname: user.nachname,
+      email: user.email,
+      username: user.username,
+      profilePicUrl: signedProfilePicUrl,
+      city: user.city,
+    },
+  };
 };
 
 const registerUser = async (userData) => {

@@ -15,8 +15,8 @@ exports.login = async (req, res) => {
   }
 
   try {
-    const tokens = await loginUser(username, password);
-    res.json(tokens);
+    const result = await loginUser(username, password);
+    res.json(result);
   } catch (err) {
     console.error("Login-Fehler:", err);
     res
