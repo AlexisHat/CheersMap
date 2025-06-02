@@ -1,39 +1,35 @@
 import React from "react";
-import { View, StyleSheet, Pressable, useWindowDimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  useWindowDimensions,
+  Text,
+  ActivityIndicator,
+} from "react-native";
 import { useNavigation, DrawerActions } from "@react-navigation/native";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { MaterialIcons } from "@expo/vector-icons";
 import ProfileAvatar from "../../components/user/ProfileAvatar";
 import StatBox from "../../components/user/StatBox";
 import { ParamListBase } from "@react-navigation/native";
+import { useUserStore } from "../../store/profileStore";
 
-type User = {
-  id: string;
-  fullName: string;
-  avatarUrl?: string | null;
-  followers: number;
-  following: number;
-};
-
-const mockUser: User = {
-  id: "1",
-  fullName: "John Doe",
-  avatarUrl: null,
-  followers: 391,
-  following: 210,
-};
 type DrawerNavProp = DrawerNavigationProp<ParamListBase>;
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<DrawerNavProp>();
-  const user = mockUser;
   const { width } = useWindowDimensions();
   const avatarSize = width * 0.35;
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTitle: user.fullName,
-      headerTitleAlign: "center",
 
+  const { user } = useUserStore();
+
+  React.useLayoutEffect(() => {
+    if (!user) return;
+
+    navigation.setOptions({
+      headerTitle: `${user.vorname ?? ""} ${user.nachname ?? ""}`.trim(),
+      headerTitleAlign: "center",
       headerRight: () => (
         <Pressable
           accessibilityLabel="Öffne Menü"
@@ -45,14 +41,23 @@ const ProfileScreen: React.FC = () => {
         </Pressable>
       ),
     });
-  }, [navigation, user.fullName]);
+  }, [navigation, user]);
+
+  if (!user) {
+    return (
+      <View style={[styles.container, { justifyContent: "center" }]}>
+        <ActivityIndicator size="large" color="#000" />
+        <Text style={{ marginTop: 12 }}>Profil wird geladen...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <ProfileAvatar uri={user.avatarUrl} size={avatarSize} />
+      <ProfileAvatar uri={user.profilePicUrl} size={avatarSize} />
       <View style={styles.statsRow}>
-        <StatBox label="Follower" value={user.followers} />
-        <StatBox label="Folgt" value={user.following} />
+        <StatBox label="Follower" value={0} />
+        <StatBox label="Folgt" value={0} />
       </View>
     </View>
   );
