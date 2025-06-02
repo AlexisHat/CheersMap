@@ -2,6 +2,7 @@ import React from "react";
 import { DrawerItem } from "@react-navigation/drawer";
 import { MaterialIcons } from "@expo/vector-icons";
 import { logout } from "../services/authService";
+import { useUserStore } from "../store/profileStore";
 
 type Props = {
   navigation: any;
@@ -10,6 +11,7 @@ type Props = {
 const LogoutDrawerItem: React.FC<Props> = ({ navigation }) => {
   const handleLogout = async () => {
     await logout();
+    useUserStore.getState().clearUser();
     navigation.closeDrawer();
   };
 
