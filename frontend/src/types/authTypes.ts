@@ -6,6 +6,7 @@ export type RefreshResponse = {
 export type AuthResponse = {
   accessToken: string;
   refreshToken: string;
+  user: User;
 };
 
 export type LoginRequest = {
@@ -31,3 +32,13 @@ export type City = {
   lat: number;
   lon: number;
 };
+
+export interface User {
+  id: string;
+  username: string;
+  vorname?: string;
+  nachname?: string;
+  email?: string;
+  profilePicUrl?: string | null;
+  city?: string | null;
+}
