@@ -21,8 +21,12 @@ import cities from "../../../assets/Orte-Deutschland.json";
 import { styles } from "../../styles/AppStyles";
 import { uploadProfilePicToS3 } from "../../services/uploadPostService";
 import { updateProfile } from "../../services/profileService";
-import useUserStore from "../../store/profileStore";
+import { useUserStore } from "../../store/profileStore";
+import { useNavigation } from "@react-navigation/native";
+
 const ProfileUpdateScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
+
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
@@ -105,6 +109,8 @@ const ProfileUpdateScreen: React.FC = () => {
       const response = await updateProfile(uploadedImageUrl, city);
       setProfilePicUrl(response.profilePicSignedUrl);
       setMainCity(response.city);
+
+      navigation.navigate("Profil");
     } catch (error: any) {
       console.error("Update Fehler:", error.message);
       Alert.alert("Fehler", error.message || "Profil Update Fehlgeschlagen");
