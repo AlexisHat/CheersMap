@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -26,14 +26,28 @@ import { useNavigation } from "@react-navigation/native";
 
 const ProfileUpdateScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { user, setProfilePicUrl, setMainCity } = useUserStore();
 
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
+  const [username, setUsername] = useState("");
   const [filteredCities, setFilteredCities] = useState<City[]>([]);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { setProfilePicUrl, setMainCity } = useUserStore();
+
+  useEffect(() => {
+    if (user?.city) {
+      setCity(user.city);
+      setQuery(user.city);
+    }
+    if (user?.username) {
+      setUsername(user.username);
+    }
+    if (user?.profilePicUrl) {
+      setImageUri(user.profilePicUrl);
+    }
+  }, [user]);
 
   const pickImage = useCallback(async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -98,7 +112,7 @@ const ProfileUpdateScreen: React.FC = () => {
     try {
       let uploadedImageUrl: string | undefined;
 
-      if (imageUri) {
+      if (imageUri && imageUri !== user?.profilePicUrl) {
         uploadedImageUrl = await uploadProfilePicToS3(imageUri);
         if (!uploadedImageUrl) {
           Alert.alert("Fehler", "Bild konnte nicht hochgeladen werden.");
@@ -106,11 +120,12 @@ const ProfileUpdateScreen: React.FC = () => {
         }
       }
 
-      const response = await updateProfile(uploadedImageUrl, city);
+      const response = await updateProfile(uploadedImageUrl, city, username);
       setProfilePicUrl(response.profilePicSignedUrl);
       setMainCity(response.city);
 
-      navigation.navigate("Profil");
+      Alert.alert("Erfolg", "Profil wurde aktualisiert.");
+      navigation.goBack();
     } catch (error: any) {
       console.error("Update Fehler:", error.message);
       Alert.alert("Fehler", error.message || "Profil Update Fehlgeschlagen");
@@ -121,7 +136,7 @@ const ProfileUpdateScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profil vervollständigen</Text>
+      <Text style={styles.title}>Profil bearbeiten</Text>
 
       {imageUri ? (
         <View style={styles.ProfilePicWrapper}>
@@ -138,6 +153,16 @@ const ProfileUpdateScreen: React.FC = () => {
           <Ionicons name="images-outline" size={48} color="#666" />
         </TouchableOpacity>
       )}
+
+      <View style={styles.inputWithIcon}>
+        <TextInput
+          placeholder="Benutzername"
+          value={username}
+          onChangeText={setUsername}
+          style={styles.inputField}
+        />
+        <Ionicons name="person" size={24} color="#1a365c" />
+      </View>
 
       <View style={styles.inputWithIcon}>
         <TextInput
@@ -182,7 +207,7 @@ const ProfileUpdateScreen: React.FC = () => {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Regestrierung Abschließen</Text>
+          <Text style={styles.buttonText}>Änderungen speichern</Text>
         )}
       </TouchableOpacity>
     </View>
