@@ -7,7 +7,7 @@ const authRouter = require("./src/routes/authRoutes");
 const locationRoutes = require("./src/routes/locationRoutes");
 const uploadRoutes = require("./src/routes/uploadRoutes");
 const profileRoutes = require("./src/routes/profileRoutes");
-
+const userRoutes = require("./src/routes/userRoutes");
 app.use("/upload", uploadRoutes);
 
 app.use("/auth", authRouter);
@@ -15,6 +15,8 @@ app.use("/auth", authRouter);
 app.use("/locations", locationRoutes);
 
 app.use("/profile", profileRoutes);
+
+app.use("/users", userRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "❌ Route nicht gefunden" });
