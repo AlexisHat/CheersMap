@@ -5,11 +5,12 @@ exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { profilePicKey, city } = req.body;
+    const { profilePicKey, city, username } = req.body;
 
     const updates = {};
     if (profilePicKey !== undefined) updates.profilePicKey = profilePicKey;
     if (city !== undefined) updates.city = city;
+    if (username !== undefined) updates.username = username;
 
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({
@@ -29,8 +30,9 @@ exports.updateProfile = async (req, res) => {
     res.status(200).json({
       message: "Profil erfolgreich aktualisiert.",
       user: {
-        profilePicSignedUrl: getSignedUrl(updatedUser.profilePicKey, 7000), //MUSS NOCH GEÄNDERT WERDEN TODO
+        profilePicSignedUrl: getSignedUrl(updatedUser.profilePicKey, 7000), // TODO ggf. anpassen
         city: updatedUser.city,
+        username: updatedUser.username,
       },
     });
   } catch (error) {
