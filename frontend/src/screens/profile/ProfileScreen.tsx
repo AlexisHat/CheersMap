@@ -55,6 +55,8 @@ const ProfileScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <ProfileAvatar uri={user.profilePicUrl} size={avatarSize} />
+      <Text style={styles.username}>@{user.username}</Text>
+      {user.city && <Text style={styles.city}>{user.city}</Text>}
       <View style={styles.statsRow}>
         <StatBox label="Follower" value={0} />
         <StatBox label="Folgt" value={0} />
@@ -62,7 +64,6 @@ const ProfileScreen: React.FC = () => {
     </View>
   );
 };
-
 export default ProfileScreen;
 
 const styles = StyleSheet.create({
@@ -71,6 +72,17 @@ const styles = StyleSheet.create({
     paddingTop: 32,
     alignItems: "center",
     backgroundColor: "#fff",
+  },
+  username: {
+    marginTop: 12,
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#000",
+  },
+  city: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 4,
   },
   statsRow: {
     flexDirection: "row",
