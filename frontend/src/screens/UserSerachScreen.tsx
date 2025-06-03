@@ -65,9 +65,14 @@ export default function UserSearchScreen() {
           renderItem={({ item }) => (
             <View style={styles.userItem}>
               <Image
-                source={{ uri: item.profileImage }}
+                source={
+                  item.profileImage
+                    ? { uri: item.profileImage }
+                    : require("../../assets/seafood_restaurant.png")
+                }
                 style={styles.avatar}
               />
+
               <View style={styles.textContainer}>
                 <Text style={styles.username}>{item.username}</Text>
                 <Text style={styles.name}>{item.name}</Text>
@@ -95,7 +100,17 @@ const styles = StyleSheet.create({
   userItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    marginBottom: 10,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+    elevation: 2,
   },
   avatar: {
     width: 48,
