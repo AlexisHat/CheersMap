@@ -18,6 +18,23 @@ const searchUsers = async (req, res) => {
   }
 };
 
+const getUserProfile = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const profileData = await getUserProfileForId(userId);
+    return res.status(200).json(profileData);
+  } catch (err) {
+    if (err.message === "USER_NOT_FOUND") {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.error("Fehler im getUserProfile:", err);
+    return res.status(500).json({ message: "Serverfehler" });
+  }
+};
+
 module.exports = {
   searchUsers,
+  getUserProfile,
 };

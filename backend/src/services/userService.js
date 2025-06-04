@@ -1,3 +1,4 @@
+const Post = require("../models/Post");
 const User = require("../models/User");
 const { getSignedUrl } = require("../services/postService");
 
@@ -40,21 +41,13 @@ exports.searchUsersByQuery = async (query) => {
 exports.getUserProfileForId = async (userId) => {
   const user = await User.findById(userId);
   if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  let profilePicUrl = null;
-  if (user.profilePicKey) {
-    try {
-      profilePicUrl = getSignedUrl(user.profilePicKey);
-    } catch (err) {
-      console.error("Fehler bei getSignedUrl:", err);
-    }
+    throw new Error("USER_NOT_FOUND");
   }
 
   const posts = await Post.find({ user: user._id })
     .sort({ createdAt: -1 })
-    .limit(20);
+    .limit(20)
+    .lean();
 
   const postPreviews = posts.map((post) => ({
     id: post._id.toString(),
@@ -62,11 +55,10 @@ exports.getUserProfileForId = async (userId) => {
     backCamUrl: getSignedUrl(post.backImageKey),
   }));
 
-  const profileData = {
+  return {
     username: user.username,
-    profilePicUrl,
-    followers: 0, // nicht im Schema vorhanden
-    following: 0, // nicht im Schema vorhanden
+    followers: 0,
+    following: 0,
     city: user.city || "",
     posts: postPreviews,
   };

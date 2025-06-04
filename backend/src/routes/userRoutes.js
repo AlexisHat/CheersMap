@@ -8,4 +8,6 @@ router.use(authenticateToken);
 
 router.get("/search", authenticateToken, controller.searchUsers);
 
+router.get("/getprofile/:userId", controller.getUserProfile);
+
 module.exports = router;
