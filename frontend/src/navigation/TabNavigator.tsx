@@ -4,7 +4,7 @@ import MapScreen from "../screens/MapScreen";
 import Feather from "@expo/vector-icons/Feather";
 import { PostStack } from "./PostStack";
 import ProfileNavigator from "./ProfileNavigator";
-import UserSearchScreen from "../screens/UserSerachScreen";
+import UserSearchScreen from "../screens/users/UserSerachScreen";
 
 const Tab = createBottomTabNavigator();
 

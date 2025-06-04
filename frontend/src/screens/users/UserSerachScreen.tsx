@@ -8,7 +8,7 @@ import {
   StyleSheet,
   SafeAreaView,
 } from "react-native";
-import api from "../api/api";
+import api from "../../api/api";
 
 interface User {
   _id: string;
