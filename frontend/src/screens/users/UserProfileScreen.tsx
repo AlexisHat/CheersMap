@@ -14,9 +14,13 @@ import PostGrid from "../../components/post/PostGrid";
 
 type UserProfileScreenProps = {
   userId: string;
+  profilePicUrl: string;
 };
 
-const UserProfileScreen: React.FC<UserProfileScreenProps> = ({ userId }) => {
+const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
+  userId,
+  profilePicUrl,
+}) => {
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +64,7 @@ const UserProfileScreen: React.FC<UserProfileScreenProps> = ({ userId }) => {
 
   return (
     <View style={styles.container}>
-      <ProfileAvatar uri={userData?.profilePicUrl} size={avatarSize} />
+      <ProfileAvatar uri={profilePicUrl} size={avatarSize} />
       <Text style={styles.username}>@{userData?.username}</Text>
       {userData?.city && <Text style={styles.city}>{userData?.city}</Text>}
       <View style={styles.statsRow}>

@@ -14,7 +14,6 @@ export type PostPreview = {
 
 export type UserProfileData = {
   username: string;
-  profilePicUrl: string;
   followers: number;
   following: number;
   city: string;
