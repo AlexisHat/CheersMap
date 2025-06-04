@@ -1,15 +1,10 @@
 import React from "react";
 import { FlatList, StyleSheet, View, Dimensions } from "react-native";
 import PostThumbnail from "./PostThumbnail";
-
-type Post = {
-  id: string;
-  frontCamUrl: string;
-  backCamUrl: string;
-};
+import { PostPreview } from "../../types/postTypes";
 
 type Props = {
-  posts: Post[];
+  posts: PostPreview[];
 };
 
 const screenWidth = Dimensions.get("window").width;
