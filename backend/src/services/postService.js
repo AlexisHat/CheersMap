@@ -10,7 +10,7 @@ exports.createPost = async (
   frontImageKey,
   backImageKey
 ) => {
-  if (!locationId || !comment || !frontImageKey || !backImageKey) {
+  if (!locationId || !frontImageKey || !backImageKey) {
     throw new Error("Einer oder mehrere Parameter fehlen.");
   }
 

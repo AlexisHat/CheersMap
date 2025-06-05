@@ -11,7 +11,7 @@ const postSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  comment: { type: String, required: true },
+  comment: { type: String, required: false },
   frontImageKey: { type: String, required: true },
   backImageKey: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
