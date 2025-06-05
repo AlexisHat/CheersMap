@@ -1,6 +1,6 @@
-const Post = require("../models/Post");
 const User = require("../models/User");
-const { getSignedUrl } = require("../services/postService");
+const { getSignedUrl } = require("./awsService");
+const { getPostPreviewsFor } = require("./postService");
 
 exports.searchUsersByQuery = async (query) => {
   if (!query || typeof query !== "string" || query.length < 2) {
@@ -39,21 +39,12 @@ exports.searchUsersByQuery = async (query) => {
 };
 
 exports.getUserProfileForId = async (userId) => {
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).lean();
   if (!user) {
     throw new Error("USER_NOT_FOUND");
   }
 
-  const posts = await Post.find({ user: user._id })
-    .sort({ createdAt: -1 })
-    .limit(20)
-    .lean();
-
-  const postPreviews = posts.map((post) => ({
-    id: post._id.toString(),
-    frontCamUrl: getSignedUrl(post.frontImageKey),
-    backCamUrl: getSignedUrl(post.backImageKey),
-  }));
+  const postPreviews = await getPostPreviewsFor(userId);
 
   return {
     username: user.username,

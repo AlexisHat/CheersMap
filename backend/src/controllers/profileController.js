@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const { getSignedUrl } = require("../services/postService");
+const { getSignedUrl } = require("../services/awsService");
 
 exports.updateProfile = async (req, res) => {
   try {
