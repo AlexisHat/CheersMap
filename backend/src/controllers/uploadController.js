@@ -19,13 +19,15 @@ exports.createPost = async (req, res) => {
       return res.status(400).json({ message: "Invalid image file." });
     }
 
+    const ts = Date.now();
+
     const frontImageUrlKey = await uploadService.uploadToS3(
       frontImage,
-      `posts/${locationId}/front.jpg`
+      `posts/${locationId}/${ts}/front.jpg`
     );
     const backImageUrlKey = await uploadService.uploadToS3(
       backImage,
-      `posts/${locationId}/back.jpg`
+      `posts/${locationId}/${ts}/back.jpg`
     );
 
     const post = await postService.createPost(
