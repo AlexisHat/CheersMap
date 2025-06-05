@@ -68,7 +68,7 @@ export default function UserSearchScreen() {
                 source={
                   item.profileImage
                     ? { uri: item.profileImage }
-                    : require("../../assets/seafood_restaurant.png")
+                    : require("../../../assets/seafood_restaurant.png")
                 }
                 style={styles.avatar}
               />
