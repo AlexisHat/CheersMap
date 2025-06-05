@@ -7,7 +7,7 @@ const {
   hash,
   generateRefreshToken,
 } = require("../utils/tokenUtils");
-const { getSignedUrl } = require("./postService");
+const { getSignedUrl } = require("./awsService");
 
 const handleRefreshToken = async (incomingToken) => {
   if (!incomingToken) {

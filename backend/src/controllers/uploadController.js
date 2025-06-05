@@ -1,6 +1,6 @@
 const uploadService = require("../services/uploadService");
 const postService = require("../services/postService");
-const { getSignedUrl } = require("../services/postService");
+const { getSignedUrl } = require("../services/awsService");
 
 exports.createPost = async (req, res) => {
   try {
