@@ -33,7 +33,6 @@ const UserProfileScreen: React.FC<Props> = ({ route }) => {
         const response = await api.get<UserProfileData>(
           `/users/getprofile/${userId}`
         );
-        console.log(response);
         setUserData(response.data);
       } catch (err: any) {
         setError(err.message || "Fehler beim Laden der Daten");
