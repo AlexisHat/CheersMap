@@ -1,6 +1,7 @@
 const uploadService = require("../services/uploadService");
 const postService = require("../services/postService");
 const { getSignedUrl } = require("../services/awsService");
+const { hash } = require("../utils/tokenUtils");
 
 exports.createPost = async (req, res) => {
   try {
@@ -12,11 +13,26 @@ exports.createPost = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
-    const isValidFront = uploadService.validateImage(frontImage);
-    const isValidBack = uploadService.validateImage(backImage);
-
-    if (!isValidFront || !isValidBack) {
+    if (
+      !uploadService.validateImage(frontImage) ||
+      !uploadService.validateImage(backImage)
+    ) {
       return res.status(400).json({ message: "Invalid image file." });
+    }
+
+    const frontHash = hash(frontImage.buffer);
+    const backHash = hash(backImage.buffer);
+
+    const duplicate = await postService.findDuplicate(
+      req.user.id,
+      frontHash,
+      backHash
+    );
+
+    if (duplicate) {
+      return res
+        .status(409)
+        .json({ message: "Diese Bilder wurden bereits gepostet." });
     }
 
     const ts = Date.now();
@@ -35,7 +51,9 @@ exports.createPost = async (req, res) => {
       comment,
       req.user.id,
       frontImageUrlKey,
-      backImageUrlKey
+      backImageUrlKey,
+      frontHash,
+      backHash
     );
 
     const frontImageUrl = getSignedUrl(frontImageUrlKey);
