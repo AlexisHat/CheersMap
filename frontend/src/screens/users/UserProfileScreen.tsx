@@ -11,16 +11,14 @@ import { UserProfileData } from "../../types/postTypes";
 import ProfileAvatar from "../../components/user/ProfileAvatar";
 import StatBox from "../../components/user/StatBox";
 import PostGrid from "../../components/post/PostGrid";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { UserSearchParamList } from "../../navigation/UserSearchStack";
 
-type UserProfileScreenProps = {
-  userId: string;
-  profilePicUrl: string;
-};
+type Props = NativeStackScreenProps<UserSearchParamList, "UserProfile">;
 
-const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
-  userId,
-  profilePicUrl,
-}) => {
+const UserProfileScreen: React.FC<Props> = ({ route }) => {
+  const { userId, profilePicUrl } = route.params;
+
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +33,7 @@ const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         const response = await api.get<UserProfileData>(
           `/users/getprofile/${userId}`
         );
+        console.log(response);
         setUserData(response.data);
       } catch (err: any) {
         setError(err.message || "Fehler beim Laden der Daten");

@@ -7,8 +7,12 @@ import {
   Image,
   StyleSheet,
   SafeAreaView,
+  TouchableOpacity,
 } from "react-native";
 import api from "../../api/api";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { UserSearchParamList } from "../../navigation/UserSearchStack";
 
 interface User {
   _id: string;
@@ -17,12 +21,16 @@ interface User {
   profileImage: string;
 }
 
+type Navigation = NativeStackNavigationProp<UserSearchParamList, "SearchUsers">;
+
 export default function UserSearchScreen() {
   const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<User[]>([]);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+
+  const navigation = useNavigation<Navigation>();
 
   useEffect(() => {
     if (!query || query.length < 2) {
@@ -50,6 +58,13 @@ export default function UserSearchScreen() {
     }
   };
 
+  const handleUserPress = (user: User) => {
+    navigation.navigate("UserProfile", {
+      userId: user._id,
+      profilePicUrl: user.profileImage ?? "",
+    });
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -63,7 +78,10 @@ export default function UserSearchScreen() {
           data={results}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
-            <View style={styles.userItem}>
+            <TouchableOpacity
+              onPress={() => handleUserPress(item)}
+              style={styles.userItem}
+            >
               <Image
                 source={
                   item.profileImage
@@ -72,12 +90,11 @@ export default function UserSearchScreen() {
                 }
                 style={styles.avatar}
               />
-
               <View style={styles.textContainer}>
                 <Text style={styles.username}>{item.username}</Text>
                 <Text style={styles.name}>{item.name}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           )}
         />
       </View>

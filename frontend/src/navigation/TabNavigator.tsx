@@ -4,7 +4,7 @@ import MapScreen from "../screens/MapScreen";
 import Feather from "@expo/vector-icons/Feather";
 import { PostStack } from "./PostStack";
 import ProfileNavigator from "./ProfileNavigator";
-import UserSearchScreen from "../screens/users/UserSerachScreen";
+import { UserSearchStack } from "./UserSearchStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -28,7 +28,7 @@ export default function TabNavigator() {
 
       <Tab.Screen
         name="Search"
-        component={UserSearchScreen}
+        component={UserSearchStack}
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
