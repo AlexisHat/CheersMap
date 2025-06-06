@@ -1,12 +1,21 @@
 import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system";
 import api from "../api/api";
 
-const compressImage = async (uri: string): Promise<string> => {
-  const result = await ImageManipulator.manipulateAsync(uri, [], {
-    compress: 0.6,
-    format: ImageManipulator.SaveFormat.JPEG,
-  });
-  return result.uri;
+export const compressImage = async (uri: string): Promise<string> => {
+  try {
+    const result = await ImageManipulator.manipulateAsync(uri, [], {
+      compress: 0.6,
+      format: ImageManipulator.SaveFormat.JPEG,
+    });
+
+    await FileSystem.deleteAsync(uri, { idempotent: true });
+
+    return result.uri;
+  } catch (error) {
+    console.error("Fehler beim Komprimieren oder Löschen der Datei:", error);
+    throw error;
+  }
 };
 
 export const uploadPost = async (data: {
@@ -41,6 +50,17 @@ export const uploadPost = async (data: {
   } catch (error) {
     console.error("Fehler beim Hochladen:", error);
     throw error;
+  }
+};
+
+export const deleteLocalFiles = async (uris: string[]) => {
+  try {
+    await Promise.all(
+      uris.map((uri) => FileSystem.deleteAsync(uri, { idempotent: true }))
+    );
+    console.log("Dateien erfolgreich gelöscht.");
+  } catch (error) {
+    console.error("Fehler beim Löschen von Dateien:", error);
   }
 };
 

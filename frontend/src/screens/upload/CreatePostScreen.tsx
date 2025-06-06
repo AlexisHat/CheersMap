@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { styles } from "../../styles/AppStyles";
 import { PostStackParamList } from "../../navigation/PostStack";
-import { uploadPost } from "../../services/uploadPostService";
+import { deleteLocalFiles, uploadPost } from "../../services/uploadPostService";
 
 type LocationItem = {
   id: string;
@@ -68,6 +68,7 @@ export const CreatePostScreen = () => {
         comment,
       });
       console.log("Raw response:", response);
+      await deleteLocalFiles([uploadFrontUri, uploadBackUri]);
       navigation.navigate("PostDetailScreen", {
         post: response.post,
         frontImageUrl: response.frontImageUrl,
