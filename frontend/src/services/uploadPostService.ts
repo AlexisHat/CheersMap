@@ -2,7 +2,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
 import api from "../api/api";
 
-export const compressImage = async (uri: string): Promise<string> => {
+export const compressImage = async (uri: string) => {
   try {
     const result = await ImageManipulator.manipulateAsync(uri, [], {
       compress: 0.6,
@@ -13,8 +13,7 @@ export const compressImage = async (uri: string): Promise<string> => {
 
     return result.uri;
   } catch (error) {
-    console.error("Fehler beim Komprimieren oder Löschen der Datei:", error);
-    throw error;
+    console.log("Fehler beim Komprimieren oder Löschen der Datei:", error);
   }
 };
 
