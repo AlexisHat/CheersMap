@@ -1,132 +1,70 @@
-import { View, StyleSheet, Text } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import React, { useRef } from "react";
+import { View, StyleSheet } from "react-native";
 import ClusteredMapView from "react-native-map-clustering";
-import * as Location from "expo-location";
-import React, { useEffect, useRef, useState } from "react";
+import { Marker } from "react-native-maps";
 
-// Falls du DUMMY_PINS separat halten möchtest, kannst du diese Datei importieren.
-const DUMMY_PINS = [
-  { id: "1", latitude: 50.9375, longitude: 6.9603, title: "Kölner Dom" },
-  { id: "2", latitude: 50.9382, longitude: 6.9599, title: "Domplatte" },
-  { id: "3", latitude: 50.9407, longitude: 6.9527, title: "Ehrenstraße" },
-  { id: "4", latitude: 50.9341, longitude: 6.9736, title: "Köln Messe/Deutz" },
-  { id: "5", latitude: 50.9376, longitude: 6.9601, title: "Severinsbrücke" },
+const pins = [
   {
-    id: "6",
-    latitude: 50.9373,
-    longitude: 6.9605,
-    title: "Römisch-Germanisches Museum",
+    id: 1,
+    title: "Kölner Dom",
+    coordinate: { latitude: 50.941278, longitude: 6.958281 },
   },
   {
-    id: "7",
-    latitude: 50.9378,
-    longitude: 6.9604,
+    id: 2,
+    title: "Museum Ludwig",
+    coordinate: { latitude: 50.941306, longitude: 6.960855 },
+  },
+  {
+    id: 3,
+    title: "Schokoladenmuseum Köln",
+    coordinate: { latitude: 50.932255, longitude: 6.964943 },
+  },
+  {
+    id: 4,
     title: "Hohenzollernbrücke",
+    coordinate: { latitude: 50.941121, longitude: 6.973033 },
   },
-  { id: "8", latitude: 50.9338, longitude: 6.9734, title: "Lanxess Arena" },
-  { id: "9", latitude: 50.9344, longitude: 6.9738, title: "Deutzer Freiheit" },
-  { id: "10", latitude: 50.9342, longitude: 6.974, title: "Rheinpark" },
-  { id: "11", latitude: 50.948, longitude: 6.931, title: "Volksgarten" },
-  { id: "12", latitude: 50.9265, longitude: 6.9624, title: "Zoo Köln" },
-  { id: "13", latitude: 50.951, longitude: 6.96, title: "Rathenauplatz" },
-  { id: "14", latitude: 50.962, longitude: 6.95, title: "Weißer Löwe" },
   {
-    id: "15",
-    latitude: 50.943,
-    longitude: 6.979,
-    title: "Kloster Groß St. Martin",
+    id: 5,
+    title: "Zoo Köln",
+    coordinate: { latitude: 50.957187, longitude: 6.960803 },
   },
-] as const;
+];
 
-export const useUserLocation = () => {
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null
-  );
-  const [error, setError] = useState<string | null>(null);
+export default function MapScreen() {
+  const mapRef = useRef(null);
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        mounted && setError("Location permission denied");
-        return;
-      }
-      try {
-        const loc = await Location.getCurrentPositionAsync({ accuracy: 5 });
-        mounted && setLocation(loc);
-      } catch (e) {
-        mounted && setError((e as Error).message);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const handleMapRef = (ref) => {
+    mapRef.current = ref;
+  };
 
-  return { location, error } as const;
-};
-
-const MapScreen: React.FC = () => {
-  const { location, error } = useUserLocation();
-  const mapRef = useRef<MapView | null>(null);
-
-  // Köln‑Zentrum als Startregion
-  const initialRegion = {
-    latitude: 50.9375,
-    longitude: 6.9603,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
-  } as const;
-
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text>{error}</Text>
-      </View>
-    );
-  }
+  // Dummy‑Callback zur Fehlervermeidung
+  const noop = () => {};
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <ClusteredMapView
-        style={{ flex: 1 }}
-        initialRegion={initialRegion}
-        onRegionChangeComplete={() => {}}
-        animationEnabled
-        // 👉 **mapRef als Funktion** übergeben, damit die Bib nichts mehr vermisst
-        mapRef={(ref) => {
-          mapRef.current = ref;
+        style={StyleSheet.absoluteFillObject}
+        initialRegion={{
+          latitude: 50.9375,
+          longitude: 6.9603,
+          latitudeDelta: 0.09,
+          longitudeDelta: 0.04,
         }}
-        // (optional) selber noch als ref behalten
-        ref={mapRef}
-        showsUserLocation={!!location}
-        provider={PROVIDER_GOOGLE}
+        clusterColor="#3b82f6"
+        animationEnabled
+        showsUserLocation
+        mapRef={handleMapRef}
+        onRegionChangeComplete={noop} // 🔧 Fix für TypeError
       >
-        {DUMMY_PINS.map((pin) => (
-          <Marker
-            key={pin.id}
-            coordinate={{ latitude: pin.latitude, longitude: pin.longitude }}
-            title={pin.title}
-          />
+        {pins.map(({ id, coordinate, title }) => (
+          <Marker key={id} coordinate={coordinate} title={title} />
         ))}
       </ClusteredMapView>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  container: { flex: 1 },
 });
-
-export default MapScreen;
