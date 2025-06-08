@@ -8,7 +8,9 @@ exports.createPost = async (
   comment,
   userId,
   frontImageKey,
-  backImageKey
+  backImageKey,
+  frontHash,
+  backHash
 ) => {
   if (!locationId || !frontImageKey || !backImageKey) {
     throw new Error("Einer oder mehrere Parameter fehlen.");
@@ -44,6 +46,8 @@ exports.createPost = async (
     comment,
     frontImageKey,
     backImageKey,
+    imageHashFront: frontHash,
+    imageHashBack: backHash,
   });
 
   return post;
@@ -60,4 +64,12 @@ exports.getPostPreviewsFor = async (userId) => {
     frontCamUrl: getSignedUrl(post.frontImageKey),
     backCamUrl: getSignedUrl(post.backImageKey),
   }));
+};
+
+exports.findDuplicate = async (userId, frontHash, backHash) => {
+  return await Post.findOne({
+    user: userId,
+    imageHashFront: frontHash,
+    imageHashBack: backHash,
+  });
 };
