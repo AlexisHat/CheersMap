@@ -67,35 +67,9 @@ export const CamScreen: React.FC = () => {
     );
   }
 
-  /*if (backUri && frontUri) {
-    return (
-      <View style={styles.center}>
-        <View>
-          <Image source={{ uri: backUri }} style={styles.camera} />
-      <Pressable onPress={swapCameras} style={styles.frontPreviewContainer}>
-        <Image source={{ uri: frontUri }} style={styles.frontPreview} />
-      </Pressable>
-        </View>
-        <Pressable onPress={reset} style={styles.button}>
-          <Text style={styles.buttonText}>Neu aufnehmen</Text>
-        </Pressable>
-        <Pressable
-          onPress={() =>
-            navigation.navigate("SelectLocation", { backUri, frontUri })
-          }
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>Weiter</Text>
-        </Pressable>
-      </View>
-    );
-  }*/
-
-  //von Chatgpt
   if (backUri && frontUri) {
     return (
       <SafeAreaView style={styles.container}>
-        {/* Vollbild Hintergrundbild (Backkamera) */}
         <View style={{ padding: 16, flex: 1 }}>
           <View
             style={{
@@ -107,7 +81,6 @@ export const CamScreen: React.FC = () => {
           >
             <Image source={{ uri: backUri }} style={styles.backPreviewImage} />
 
-            {/* Frontkamera oben links */}
             <Pressable
               onPress={swapCameras}
               style={styles.frontPreviewContainer}
@@ -116,14 +89,12 @@ export const CamScreen: React.FC = () => {
             </Pressable>
           </View>
         </View>
-        {/* Buttons unten links und rechts */}
         <View style={{ flexDirection: "row" }}>
           <Pressable onPress={reset} style={styles.backButton}>
             <Text style={styles.backButtonText}>Neu aufnehmen</Text>
           </Pressable>
           <Pressable
             onPress={() => {
-              //Checken, ob Kamera getauscht wurde, wenn ja zurück tauschen
               if (swapped) {
                 const newBackUri = frontUri;
                 const newFrontUri = backUri;
