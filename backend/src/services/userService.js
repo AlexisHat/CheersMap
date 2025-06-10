@@ -54,3 +54,18 @@ exports.getUserProfileForId = async (userId) => {
     posts: postPreviews,
   };
 };
+
+exports.getProfiledPicUrlForUser = async (userId) => {
+  const user = await User.findById(userId).lean();
+
+  if (!user) {
+    throw new Error("USER_NOT_FOUND");
+  }
+
+  if (!user.profilePicKey) {
+    return null;
+  }
+
+  const signedUrl = getSignedUrl(user.profilePicKey);
+  return signedUrl;
+};

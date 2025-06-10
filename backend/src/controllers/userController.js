@@ -1,6 +1,7 @@
 const {
   searchUsersByQuery,
   getUserProfileForId,
+  getProfiledPicUrlForUser,
 } = require("../services/userService");
 
 const searchUsers = async (req, res) => {
@@ -34,7 +35,23 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const getProfilePicUrl = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const profiledPicUrl = await getProfiledPicUrlForUser(userId);
+    return res.status(200).json({ url: profiledPicUrl });
+  } catch (err) {
+    if (err.message === "USER_NOT_FOUND") {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.error("Fehler im getUserProfile:", err);
+    return res.status(500).json({ message: "Serverfehler" });
+  }
+};
+
 module.exports = {
   searchUsers,
   getUserProfile,
+  getProfilePicUrl,
 };
