@@ -5,6 +5,7 @@ import {
   useWindowDimensions,
   Text,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import api from "../../api/api";
 import { UserProfileData } from "../../types/postTypes";
@@ -44,6 +45,10 @@ const UserProfileScreen: React.FC<Props> = ({ route }) => {
     fetchUserData();
   }, [userId]);
 
+  const handleFollowRequest = () => {
+    console.log(`Folgeanfrage an ${userData?.username} gesendet`);
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -69,6 +74,12 @@ const UserProfileScreen: React.FC<Props> = ({ route }) => {
         <StatBox label="Follower" value={userData?.followers || 0} />
         <StatBox label="Folgt" value={userData?.following || 0} />
       </View>
+      <TouchableOpacity
+        style={styles.followButton}
+        onPress={handleFollowRequest}
+      >
+        <Text style={styles.followButtonText}>Folgen</Text>
+      </TouchableOpacity>
       <View style={styles.postsSection}>
         <Text style={styles.postsHeading}>Beiträge</Text>
         <PostGrid posts={userData?.posts || []} />
@@ -102,6 +113,20 @@ const styles = StyleSheet.create({
   postsSection: {
     marginTop: 16,
     flex: 1,
+  },
+  followButton: {
+    marginTop: 10,
+    alignSelf: "center",
+    backgroundColor: "#007AFF",
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+
+  followButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
   },
   postsHeading: {
     fontSize: 18,
