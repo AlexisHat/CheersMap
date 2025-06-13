@@ -111,3 +111,23 @@ describe("userService", () => {
     });
   });
 });
+
+it("should handle errors in getSignedUrl and still return result", async () => {
+  const mockUsers = [{ _id: "1", username: "alice", profilePicKey: "key1" }];
+
+  User.find.mockReturnValue({
+    limit: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    lean: jest.fn().mockResolvedValue(mockUsers),
+  });
+
+  awsService.getSignedUrl.mockImplementation(() => {
+    throw new Error("S3 Fehler");
+  });
+
+  const result = await userService.searchUsersByQuery("al");
+
+  expect(result).toEqual([
+    { _id: "1", username: "plsHireMEEE", profileImage: null },
+  ]);
+});
