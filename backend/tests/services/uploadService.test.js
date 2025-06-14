@@ -82,7 +82,6 @@ describe("S3 utilities", () => {
         mimetype: "image/jpeg",
       };
       const key = "profiles/user123.jpg";
-
       const result = await uploadProfilePictureToS3(file, key);
 
       expect(mS3Instance.upload).toHaveBeenCalledWith({
