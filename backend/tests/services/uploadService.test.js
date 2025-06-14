@@ -11,7 +11,7 @@ const {
   validateImage,
   uploadToS3,
   uploadProfilePictureToS3,
-} = require("../src/s3Utils"); 
+} = require("../src/s3Utils");
 
 describe("S3 utilities", () => {
   const BUCKET = "test-bucket";
@@ -72,3 +72,27 @@ describe("S3 utilities", () => {
     });
   });
 
+  describe("uploadProfilePictureToS3", () => {
+    it("uploads the profile picture to S3 and resolves with the key", async () => {
+      const mS3Instance = new AWS.S3();
+      mS3Instance.promise.mockResolvedValue({});
+
+      const file = {
+        buffer: Buffer.from("dummy"),
+        mimetype: "image/jpeg",
+      };
+      const key = "profiles/user123.jpg";
+
+      const result = await uploadProfilePictureToS3(file, key);
+
+      expect(mS3Instance.upload).toHaveBeenCalledWith({
+        Bucket: BUCKET,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      });
+
+      expect(result).toBe(key);
+    });
+  });
+});
