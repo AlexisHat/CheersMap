@@ -125,5 +125,23 @@ describe("postService", () => {
       );
       expect(result).toEqual({ id: "post2" });
     });
+    it("wirft Fehler, wenn Location weder in DB noch im Cache ist", async () => {
+      Location.findOne.mockResolvedValue(null);
+      locationApiCache.get.mockReturnValue(undefined);
+
+      await expect(
+        postService.createPost(
+          locationId,
+          comment,
+          userId,
+          frontImageKey,
+          backImageKey,
+          frontHash,
+          backHash
+        )
+      ).rejects.toThrow(
+        "Location nicht in Datenbank oder Cache gefunden. Bitte erst abrufen."
+      );
+    });
   });
 });
