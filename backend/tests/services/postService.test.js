@@ -143,5 +143,68 @@ describe("postService", () => {
         "Location nicht in Datenbank oder Cache gefunden. Bitte erst abrufen."
       );
     });
+
+    describe("getPostPreviewsFor", () => {
+      it("liefert signierte URLs für die letzten 20 Posts", async () => {
+        const posts = [
+          { _id: "p1", frontImageKey: "f1", backImageKey: "b1" },
+          { _id: "p2", frontImageKey: "f2", backImageKey: "b2" },
+        ];
+
+        const chain = {
+          sort: jest.fn(),
+          limit: jest.fn(),
+          lean: jest.fn(),
+        };
+        chain.sort.mockReturnValue(chain);
+        chain.limit.mockReturnValue(chain);
+        chain.lean.mockResolvedValue(posts);
+        Post.find.mockReturnValue(chain);
+
+        getSignedUrl.mockImplementation(
+          (key) => `https://s3.amazonaws.com/bucket/${key}`
+        );
+
+        const result = await postService.getPostPreviewsFor(userId);
+
+        expect(Post.find).toHaveBeenCalledWith({ user: userId });
+        expect(chain.sort).toHaveBeenCalledWith({ createdAt: -1 });
+        expect(chain.limit).toHaveBeenCalledWith(20);
+        expect(chain.lean).toHaveBeenCalled();
+
+        expect(result).toEqual([
+          {
+            id: "p1",
+            frontCamUrl: "https://s3.amazonaws.com/bucket/f1",
+            backCamUrl: "https://s3.amazonaws.com/bucket/b1",
+          },
+          {
+            id: "p2",
+            frontCamUrl: "https://s3.amazonaws.com/bucket/f2",
+            backCamUrl: "https://s3.amazonaws.com/bucket/b2",
+          },
+        ]);
+      });
+    });
+
+    describe("findDuplicate", () => {
+      it("ruft Post.findOne mit dem richtigen Query auf", async () => {
+        const duplicateDoc = { _id: "dup1" };
+        Post.findOne.mockResolvedValue(duplicateDoc);
+
+        const result = await postService.findDuplicate(
+          userId,
+          frontHash,
+          backHash
+        );
+
+        expect(Post.findOne).toHaveBeenCalledWith({
+          user: userId,
+          imageHashFront: frontHash,
+          imageHashBack: backHash,
+        });
+        expect(result).toBe(duplicateDoc);
+      });
+    });
   });
 });
