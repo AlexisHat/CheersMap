@@ -76,7 +76,7 @@ exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
         }
       )
     );
-  
+
     return {
       name: place.displayName?.text || "Unbenannt",
       address: place.formattedAddress,
@@ -85,12 +85,11 @@ exports.searchNearbyPlaces = async (lat, long, maxResults = 10) => {
       primaryType: place.primaryType,
     };
   });
-  
+
   mapped.sort((a, b) => a.distance - b.distance);
-  
+
   locationCache.set(cacheKey, mapped);
   console.log("Cache miss – Daten gespeichert");
-  
+
   return mapped;
-  console.log(mapped);
-};  
+};
